@@ -1,6 +1,5 @@
 # base image
 FROM phusion/baseimage:0.9.17
-RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 ENV HOME=/root
 CMD ["/sbin/my_init"]
 
