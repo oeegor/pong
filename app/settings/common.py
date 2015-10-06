@@ -58,12 +58,12 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
-                'social..django_context_processors.backends',
+                'social.apps.django_app.context_processors.backends',
             ],
         },
     },
 ]
-WSGI_APPLICATION = 'wsgi.ication'
+WSGI_APPLICATION = 'wsgi.application'
 
 
 # Internationalization
