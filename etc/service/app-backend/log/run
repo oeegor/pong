@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+LOG=/var/log/app/app-backend-1
+
+test -d "$LOG" || mkdir -p -m 2750 "$LOG" && chown www-data "$LOG"
+exec chpst -u www-data svlogd "$LOG"

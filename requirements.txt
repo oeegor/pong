@@ -1,0 +1,7 @@
+Django==1.8.5
+dj-database-url==0.3.0
+django_extensions==1.5.5
+gunicorn==19.3.0
+psycopg2==2.6.1
+pytest-django==2.8.0
+python-social-auth==0.2.12

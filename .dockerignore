@@ -1,0 +1,13 @@
+*.pyc
+.DS_Store
+.env
+.git
+.idea
+__pycache__
+docker-compose.yml
+node_modules
+pyenv
+env
+# chrn/local.py
+env
+venv

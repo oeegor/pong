@@ -1,0 +1,29 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <title>chrn</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      config = {{ ctx_json }};
+
+    </script>
+    <link rel="shortcut icon" href='{% static "app/img/favicon.png" %}?v={{ ctx.MEDIA_HASH }}'>
+    <link href='{% static "app/main.css" %}?v={{ ctx.MEDIA_HASH }}' rel='stylesheet'>
+  </head>
+  <body>
+  <div id="layout" class="layout">
+
+
+    user {{ request.user.email }}
+    your tournaments:
+    {% for t in tournament %}
+      {{ t.start_at }}
+    {% endfor %}
+  </div>
+
+  <!--script src='{% static "chrn/app.jsx" %}?v={{ ctx.MEDIA_HASH }}'></script-->
+  </body>
+</html>
