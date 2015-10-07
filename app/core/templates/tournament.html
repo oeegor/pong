@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+    user {{ request.user.email }}
+    <h1>Tournament</h1>
+      {{ tournament.start_at }}
+    <h1>Participants</h1>
+    <ul>
+    {% for p in participants %}
+      <li>
+        {{ p.short_email }}
+      </li>
+    {% endfor %}
+    </ul>
+
+    <h1>Table</h1>
+
+    {% for g in groups %}
+      <h2>Group {{ g.name}}</h2>
+      <table>
+      {% with g.get_table as table %}
+        <thead>
+          <tr>
+            <th></th>
+            {% for name in table.names %}
+              <th>{{ name }}</th>
+            {% endfor %}
+            <th>Points</th>
+            <th>Sets</th>
+            <th>Balls</th>
+            <th>Place</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in table %}
+          <tr>
+            <td>{{ row.name }}</td>
+            {% for score in row %}
+              <td>{{ score.score }}</td>
+            {% endfor %}
+              <td>{{ row.points }}</td>
+              <td>{{ row.sets }}</td>
+              <td>{{ row.balls }}</td>
+              <td>{{ row.place }}</td>
+          </tr>
+        {% endfor %}
+      {% endwith %}
+      </tbody>
+      </table>
+      {% comment %}
+      <li>
+        <a href="{% url 'app-match' m.id %}">{{ m.player1.short_email }} {{ m.player2.short_email }}</a>
+      </li>
+      {% endcomment %}
+    {% endfor %}
+{% endblock %}

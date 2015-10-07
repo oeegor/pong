@@ -1,0 +1,27 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <title>Pongota</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href='{% static "app/img/favicon.png" %}?v={{ ctx.MEDIA_HASH }}'>
+    <link href='{% static "app/main.css" %}?v={{ ctx.MEDIA_HASH }}' rel='stylesheet'>
+    <style>
+    * {
+      background: #222;
+      color: #eee;
+    }
+    </style>
+  </head>
+  <body>
+  <div id="layout" class="layout">
+
+    {% block content %}{% endblock %}
+
+  </div>
+
+  <!--script src='{% static "chrn/app.jsx" %}?v={{ ctx.MEDIA_HASH }}'></script-->
+  </body>
+</html>
