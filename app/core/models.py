@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from datetime import datetime
+from random import shuffle
 
 from django.core.validators import MaxValueValidator
 from django.db import models
@@ -92,6 +93,24 @@ class Tournament(models.Model):
     start_at = models.DateField()
     end_at = models.DateField(null=True, blank=True)
 
+    def create_groups(self, capacity):
+        if self.groups.all().exists():
+            return
+        names = ['Tech Ninjas', 'The Nerd Herd', 'The Awakening', 'United Ration']
+        shuffle(names)
+        players = self.participants.all().order_by('?')
+        i = 0
+        for player in players:
+            if i == 0:
+                group = Group.objects.create(
+                    tournament=self,
+                    name=names and names.pop(0) or 'noname',
+                )
+            group.participants.add(player)
+            i += 1
+            if i == capacity:
+                i = 0
+
     def __unicode__(self):
         return u'Tournament {}| {}'.format(self.pk, self.start_at)
 
@@ -117,6 +136,9 @@ class Group(models.Model):
 
     def __unicode__(self):
         return u'Group {}| {}'.format(self.name, self.tournament)
+
+    class Meta:
+        unique_together = [('name', 'tournament')]
 
 
 class SetResult(models.Model):
