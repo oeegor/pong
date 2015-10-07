@@ -56,7 +56,7 @@ docs/_build/
 # PyBuilder
 target/
 
-chrn/local.py
+local.py
 db.sqlite3
 node_modules
 .docker-env

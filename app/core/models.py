@@ -52,6 +52,7 @@ class TableCell(object):
         self.score = score
         self.player1 = player1
         self.player2 = player2
+        self.is_approved = None
         self.is_filler = player1.pk == player2.pk
 
     def __unicode__(self):
@@ -120,15 +121,17 @@ class Group(models.Model):
     participants = models.ManyToManyField('account.User')
     created_at = models.DateTimeField(default=datetime.utcnow)
 
-    def get_table(self):
+    def get_table(self, user_id):
         participants = self.participants.all().order_by('email')
         table = Table(participants)
         names = [p.short_email for p in participants]
         for r in self.results.all():
             i = names.index(r.player1.short_email)
             j = names.index(r.player2.short_email)
-            table[i][j].score = r.get_score(i < j)
-            table[j][i].score = r.get_score(i > j)
+            table[i][j].set_result = table[j][i].set_result = r
+            table[i][j].is_approved = table[j][i].is_approved = r.is_approved_by_user(user_id)
+            table[i][j].score = r.get_score(True)
+            table[j][i].score = r.get_score(False)
         table.set_places()
         print table
         return table
@@ -150,10 +153,18 @@ class SetResult(models.Model):
     player1_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
     player2_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
 
-    player1_approved = models.NullBooleanField()
-    player2_approved = models.NullBooleanField()
+    player1_approved = models.BooleanField(default=False)
+    player2_approved = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(default=datetime.utcnow)
+
+    def is_approved_by_user(self, user_id):
+        if user_id == self.player1_id:
+            return self.player1_approved
+        elif user_id == self.player2_id:
+            return self.player2_approved
+        else:
+            return
 
     def get_score(self, is_player1):
 

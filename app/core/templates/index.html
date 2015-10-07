@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    user {{ request.user.email }}
-    your tournaments:
+    Your tournaments:
     <ul>
     {% for t in joined_tournaments %}
       <li>
@@ -10,7 +9,7 @@
       </li>
     {% endfor %}
     </ul>
-    available tournaments:
+    Available tournaments:
     <ul>
     {% for t in available_tournaments %}
       <li>

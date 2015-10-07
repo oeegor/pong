@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 
 from account.models import User
 from core.forms import SetResultForm
-from core.models import Tournament
+from core.models import SetResult, Tournament
 from utils import render_to
 
 
@@ -31,9 +31,15 @@ def home(request):
 @render_to('tournament.html')
 def tournament(request, tournament_id):
     t = Tournament.objects.get(id=tournament_id)
+    groups = [{
+        'name': g.name,
+        'table': g.get_table(request.user.pk),
+        'pk': g.pk,
+        } for g in t.groups.all()
+    ]
     ctx = {
         'tournament': t,
-        'groups': t.groups.all(),
+        'groups': groups,
         'participants': t.participants.all(),
     }
     return ctx
@@ -72,3 +78,17 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
             }
         form.save()
         return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))
+
+
+@login_required(login_url='/login/')
+def approve_set_result(request, set_result_id):
+    sr = SetResult.objects.filter(pk=set_result_id).first()
+    if sr:
+        user_id = request.user.pk
+        if sr.player1.pk == user_id:
+            sr.player1_approved = True
+            sr.save()
+        elif sr.player2.pk == user_id:
+            sr.player2_approved = True
+            sr.save()
+    return HttpResponseRedirect(reverse('app-tournament', args=[sr.group.tournament.pk]))

@@ -8,15 +8,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href='{% static "app/img/favicon.png" %}?v={{ ctx.MEDIA_HASH }}'>
     <link href='{% static "app/main.css" %}?v={{ ctx.MEDIA_HASH }}' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,600' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Cabin+Sketch:400,700' rel='stylesheet' type='text/css'>
     <style>
-    * {
-      background: #222;
-      color: #eee;
+    h1, h2, h3 {
+      font-family: 'Cabin Sketch', cursive;
+    }
+    body {
+      font-family: 'Open Sans', sans-serif;
     }
     </style>
   </head>
   <body>
   <div id="layout" class="layout">
+
+    {% block user %}
+      <div>
+        {{ request.user.email }}
+        <a href="{% url 'logout' %}?noredirect">Exit</a>
+      </div>
+    {% endblock %}
 
     {% block content %}{% endblock %}
 
