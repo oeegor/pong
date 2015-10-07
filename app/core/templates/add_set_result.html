@@ -2,7 +2,8 @@
 
 {% block content %}
     user {{ request.user.email }}
-    <h1>Participants</h1>
+    <h2>Player 1: {{ player1.email }}</h2>
+    <h2>Player 2: {{ player2.email }}</h2>
     <form action="" method="post">
         {% csrf_token %}
         {{ form.as_p }}

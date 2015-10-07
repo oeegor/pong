@@ -2,8 +2,10 @@
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 
+from account.models import User
 from core.forms import SetResultForm
 from core.models import Tournament
 from utils import render_to
@@ -15,7 +17,12 @@ def home(request):
 
     ctx = {
         'joined_tournaments': Tournament.objects.filter(participants=request.user),
-        'available_tournaments': Tournament.objects.exclude(participants=request.user)
+        'available_tournaments': (
+            Tournament.objects
+            .exclude(participants=request.user)
+            .annotate(group_cnt=Count('groups'))
+            .exclude(group_cnt__gt=0)
+        )
     }
     return ctx
 
@@ -48,6 +55,8 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
         )
         form.set_hidden_inputs()
         ctx = {
+            'player1': User.objects.get(pk=player1_id),
+            'player2': User.objects.get(pk=player2_id),
             'form': form
         }
         return ctx

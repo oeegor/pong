@@ -62,11 +62,10 @@ class TableCell(object):
 
 
 class Score(object):
-    def __init__(self, wins, balls_win, balls_lose, set_result):
+    def __init__(self, wins, balls_win, balls_lose):
         self.wins = wins
         self.balls_win = balls_win
         self.balls_lose = balls_lose
-        self.set_result = set_result
 
     def __unicode__(self):
         return u'<Score {}>'.format(self.score)
@@ -159,22 +158,18 @@ class SetResult(models.Model):
     def get_score(self, is_player1):
 
         if is_player1:
+            p1_wins = self.player1_wins
             p1_points = self.player1_points
             p2_points = self.player2_points
         else:
+            p1_wins = 3 - self.player1_wins
             p1_points = self.player2_points
             p2_points = self.player1_points
 
-        if p1_points > p2_points:
-            wins = self.player1_wins
-        else:
-            wins = 3 - self.player1_wins
-
         return Score(
-            wins=wins,
+            wins=p1_wins,
             balls_win=p1_points,
             balls_lose=p2_points,
-            set_result=self,
         )
 
     def __unicode__(self):
