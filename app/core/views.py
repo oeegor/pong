@@ -1,8 +1,11 @@
 # coding: utf-8
 
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
-from core.models import Tournament, Match
+from core.forms import SetResultForm
+from core.models import Tournament
 from utils import render_to
 
 
@@ -37,10 +40,26 @@ def join_tournament(request, tournament_id):
 
 
 @login_required(login_url='/login/')
-@render_to('match.html')
-def match(request, match_id):
-    match = Match.objects.get(id=match_id)
-    ctx = {
-        'match': match,
-    }
-    return ctx
+@render_to('add_set_result.html')
+def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
+    if request.method == 'GET':
+        form = SetResultForm(
+            initial={'group': group_id, 'player1': player1_id, 'player2': player2_id},
+        )
+        form.set_hidden_inputs()
+        ctx = {
+            'form': form
+        }
+        return ctx
+
+    elif request.method == 'POST':
+        form = SetResultForm(request.POST)
+        if str(request.user.pk) not in [player1_id, player2_id]:
+            form.add_error(None, 'cannot set scores for not your games')
+        if not form.is_valid():
+            form.set_hidden_inputs()
+            return {
+                'form': form
+            }
+        form.save()
+        return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))

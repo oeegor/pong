@@ -1,16 +1,18 @@
 # coding: utf-8
 
 from datetime import datetime
-from itertools import combinations
 
 from django.core.validators import MaxValueValidator
-from django.db import models, transaction
+from django.db import models
 
 
 class Table(list):
-    def __init__(self, names):
+    def __init__(self, players):
         super(list, self).__init__()
-        self.names = names
+        self.players = players
+        for p1 in self.players:
+            row = TableRow(players, p1)
+            self.append(row)
 
     def set_places(self):
         sorted_rows = sorted(self, key=lambda i: i.points, reverse=True)
@@ -18,11 +20,52 @@ class Table(list):
             row.place = place
 
 
+class TableRow(list):
+    def __init__(self, players, player1):
+        super(list, self).__init__()
+        self.player1 = player1
+        self.place = None
+        for player2 in players:
+            self.append(TableCell(None, player1, player2))
+
+    @property
+    def balls(self):
+        win = sum([s.score.balls_win for s in self if s.score])
+        lose = sum([s.score.balls_lose for s in self if s.score])
+        return u'{}:{}'.format(win, lose)
+
+    @property
+    def sets(self):
+        win = sum([s.score.wins for s in self if s.score])
+        lose = sum([s.score.loses for s in self if s.score])
+        return u'{}:{}'.format(win, lose)
+
+    @property
+    def points(self):
+        points = sum([s.score.points for s in self if s.score])
+        return u'{}'.format(points)
+
+
+class TableCell(object):
+    def __init__(self, score, player1, player2):
+        self.score = score
+        self.player1 = player1
+        self.player2 = player2
+        self.is_filler = player1.pk == player2.pk
+
+    def __unicode__(self):
+        return u'<Cell {}>'.format(self.score)
+
+    def __repr__(self):
+        return unicode(self)
+
+
 class Score(object):
-    def __init__(self, wins, balls_win, balls_lose):
+    def __init__(self, wins, balls_win, balls_lose, set_result):
         self.wins = wins
         self.balls_win = balls_win
         self.balls_lose = balls_lose
+        self.set_result = set_result
 
     def __unicode__(self):
         return u'<Score {}>'.format(self.score)
@@ -43,32 +86,6 @@ class Score(object):
         return u'{}:{}'.format(self.wins, self.loses)
 
 
-class TableRow(list):
-    def __init__(self, size, name):
-        super(list, self).__init__()
-        self.name = name
-        self.place = None
-        for _ in xrange(size):
-            self.append(None)
-
-    @property
-    def balls(self):
-        win = sum([s.balls_win for s in self if s])
-        lose = sum([s.balls_lose for s in self if s])
-        return u'{}:{}'.format(win, lose)
-
-    @property
-    def sets(self):
-        win = sum([s.wins for s in self if s])
-        lose = sum([3 - s.wins for s in self if s])
-        return u'{}:{}'.format(win, lose)
-
-    @property
-    def points(self):
-        points = sum([s.points for s in self if s])
-        return u'{}'.format(points)
-
-
 class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
     created_at = models.DateTimeField(default=datetime.utcnow)
@@ -86,80 +103,60 @@ class Group(models.Model):
     created_at = models.DateTimeField(default=datetime.utcnow)
 
     def get_table(self):
-        matches = self.matches.all().order_by('player1__email')
-        if not matches:
-            self.generate_matches()
-
-        # init table
-        names = list(sorted({p.short_email for p in self.participants.all()}))
-        table = Table(names)
-        for name in names:
-            table.append(TableRow(len(names), name))
-
-        for m in matches:
-            i = names.index(m.player1.short_email)
-            j = names.index(m.player2.short_email)
-            table[i][j] = m.get_score(i < j)
-            table[j][i] = m.get_score(i > j)
+        participants = self.participants.all().order_by('email')
+        table = Table(participants)
+        names = [p.short_email for p in participants]
+        for r in self.results.all():
+            i = names.index(r.player1.short_email)
+            j = names.index(r.player2.short_email)
+            table[i][j].score = r.get_score(i < j)
+            table[j][i].score = r.get_score(i > j)
         table.set_places()
         print table
         return table
-
-    @transaction.atomic
-    def generate_matches(self):
-        matches = list(self.matches.all())
-        if matches:
-            return matches
-        for p1, p2 in combinations(self.participants.all(), 2):
-            matches.append(Match.objects.create(player1=p1, player2=p2, group=self))
-        return matches
 
     def __unicode__(self):
         return u'Group {}| {}'.format(self.name, self.tournament)
 
 
-class Match(models.Model):
+class SetResult(models.Model):
+    group = models.ForeignKey('Group', related_name='results')
+
     player1 = models.ForeignKey('account.User', related_name='player1')
     player2 = models.ForeignKey('account.User', related_name='player2')
-    group = models.ForeignKey('Group', related_name='matches')
+
+    player1_wins = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)])
+    player1_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
+    player2_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
+
+    player1_approved = models.NullBooleanField()
+    player2_approved = models.NullBooleanField()
+
     created_at = models.DateTimeField(default=datetime.utcnow)
 
     def get_score(self, is_player1):
-        wins = win_points = lose_points = 0
-        results = self.results.all()
-        if results.count() != 3:
-            return None
-        for result in results:
-            if is_player1:
-                p1_points = result.player1_points
-                p2_points = result.player2_points
-            else:
-                p1_points = result.player2_points
-                p2_points = result.player1_points
 
-            if p1_points > p2_points:
-                wins += 1
-            win_points += p1_points
-            lose_points += p2_points
+        if is_player1:
+            p1_points = self.player1_points
+            p2_points = self.player2_points
+        else:
+            p1_points = self.player2_points
+            p2_points = self.player1_points
+
+        if p1_points > p2_points:
+            wins = self.player1_wins
+        else:
+            wins = 3 - self.player1_wins
+
         return Score(
             wins=wins,
-            balls_win=win_points,
-            balls_lose=lose_points
+            balls_win=p1_points,
+            balls_lose=p2_points,
+            set_result=self,
         )
 
     def __unicode__(self):
-        return u'Match {}| {}'.format(self.player1, self.player2)
+        return u'SetResult {}| {}'.format(self.player1, self.player2)
 
-
-class MatchSet(models.Model):
-    match = models.ForeignKey('Match', related_name='results')
-    player1_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
-    player1_approved = models.NullBooleanField()
-    player2_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
-    player2_approved = models.NullBooleanField()
-    created_at = models.DateField(default=datetime.utcnow)
-
-    def save(self, **kwargs):
-        if self.pk is None and MatchSet.objects.filter(match=self.match).count() >= 3:
-            raise ValueError('max number of match sets can be three')
-        return super(MatchSet, self).save(**kwargs)
+    class Meta:
+        unique_together = [('group', 'player1', 'player2')]

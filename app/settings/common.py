@@ -59,6 +59,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.request',
                 'social.apps.django_app.context_processors.backends',
             ],
         },
@@ -76,7 +77,6 @@ USE_TZ = False
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-DT_FMT = '%Y-%m-%dT%H:%M:%S'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
