@@ -1,4 +1,4 @@
-.PHONY: pip run
+.PHONY: pip run up stop build buildup
 
 # Makefile
 env/bin/activate:
@@ -18,7 +18,7 @@ run: env/bin/activate requirements.txt
 
 # target: build - build docker image
 build:
-	docker build -t pong_app .
+	docker-compose build
 
 # target: build - build docker image
 stop:
