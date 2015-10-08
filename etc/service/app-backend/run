@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
-cd /opt/app
+cd /opt/app/app
 exec 2>&1
-exec chpst -u www-data gunicorn --config /etc/app_gunicorn.py app.wsgi
+exec chpst -u www-data gunicorn --config /etc/app_gunicorn.py wsgi
