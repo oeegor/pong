@@ -1,10 +1,6 @@
-chrn:
+pong:
   build: .
-  environment:
-    CHRN_ENV_ROLE: PROD
-    CHRN_ROOT: /var/www/chrn/
-
   env_file:
     - .docker-env
   ports:
-    - "80:80"
+    - "8001:80"

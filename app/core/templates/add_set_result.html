@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-    user {{ request.user.email }}
-    <h2>Player 1: {{ player1.email }}</h2>
-    <h2>Player 2: {{ player2.email }}</h2>
+    <h2>Player 1: {{ player1.short_email }}</h2>
+    <h2>Player 2: {{ player2.short_email }}</h2>
     <form action="" method="post">
         {% csrf_token %}
         {{ form.as_p }}

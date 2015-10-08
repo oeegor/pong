@@ -8,11 +8,11 @@ from django.db import models
 
 
 class Table(list):
-    def __init__(self, players):
+    def __init__(self, players, user_id):
         super(list, self).__init__()
         self.players = players
         for p1 in self.players:
-            row = TableRow(players, p1)
+            row = TableRow(players, p1, user_id)
             self.append(row)
 
     def set_places(self):
@@ -22,12 +22,13 @@ class Table(list):
 
 
 class TableRow(list):
-    def __init__(self, players, player1):
+    def __init__(self, players, player1, user_id):
         super(list, self).__init__()
         self.player1 = player1
         self.place = None
         for player2 in players:
-            self.append(TableCell(None, player1, player2))
+            is_current_user = user_id in [player1.pk, player2.pk]
+            self.append(TableCell(None, player1, player2, is_current_user))
 
     @property
     def balls(self):
@@ -48,11 +49,12 @@ class TableRow(list):
 
 
 class TableCell(object):
-    def __init__(self, score, player1, player2):
+    def __init__(self, score, player1, player2, is_current_user):
         self.score = score
         self.player1 = player1
         self.player2 = player2
         self.is_approved = None
+        self.is_current_user = is_current_user
         self.is_filler = player1.pk == player2.pk
 
     def __unicode__(self):
@@ -123,7 +125,7 @@ class Group(models.Model):
 
     def get_table(self, user_id):
         participants = self.participants.all().order_by('email')
-        table = Table(participants)
+        table = Table(participants, user_id)
         names = [p.short_email for p in participants]
         for r in self.results.all():
             i = names.index(r.player1.short_email)

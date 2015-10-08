@@ -8,6 +8,6 @@ docker-compose.yml
 node_modules
 pyenv
 env
-# chrn/local.py
+local.py
 env
 venv
