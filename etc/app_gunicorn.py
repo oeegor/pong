@@ -1,6 +1,8 @@
 # coding: utf-8
 import os
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings.test')
+
 bind = '127.0.0.1:8001'
 errorlog = '-'
 graceful_timeout = 180
