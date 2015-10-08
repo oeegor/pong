@@ -1,0 +1,13 @@
+job_build_n_publish:
+  only:
+    - master
+  script:
+    - proj=pong
+    - tag=ci-$CI_PROJECT_ID-$CI_BUILD_ID
+    - dst=docker.p.ostrovok.ru/releases/$proj:b$CI_BUILD_ID
+    - lst=docker.p.ostrovok.ru/releases/$proj:latest
+    - docker build -t $tag .
+    - docker tag $tag $dst
+    - docker push $dst
+    - docker tag -f $tag $lst
+    - docker push $lst
