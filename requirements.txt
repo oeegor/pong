@@ -2,7 +2,7 @@ chardet==2.3.0
 colorama==0.2.5
 dj-database-url==0.3.0
 Django==1.8.5
-django-extensions==1.5.5
+django-extensions==1.5.7
 gunicorn==19.3.0
 html5lib==0.999
 oauthlib==1.0.3
