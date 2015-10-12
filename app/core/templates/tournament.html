@@ -4,7 +4,7 @@
 
     <h1>Tournament: {{ tournament.start_at }}</h1>
     {% if not groups %}
-      <h1>Participants</h1>
+      <h1>Participants ({{ participants | length }})</h1>
       <ul>
       {% for p in participants %}
         <li>
