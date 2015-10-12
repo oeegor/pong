@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import os
+from .log import *
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,6 +30,7 @@ INSTALLED_APPS = (
     'account',
     'core',
     'django_extensions',
+    'raven.contrib.django.raven_compat',
     'social.apps.django_app.default',
 )
 
