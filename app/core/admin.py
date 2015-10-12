@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Group, Tournament, SetResult
+from .models import Group, Quote, Tournament, SetResult
 
 
 def create_groups_5(modeladmin, request, queryset):
@@ -39,6 +39,10 @@ class GroupAdmin(admin.ModelAdmin):
     list_display_links = ('pk', 'tournament',)
 
 
+class QuoteAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'text', 'author')
+
+
 class SetResultAdmin(admin.ModelAdmin):
     list_display = ('player1', 'player2', 'player1_points', 'player2_points', 'player1_approved', 'player2_approved', 'group', 'created_at')
     list_filter = ('player1', 'player2', 'player1_points', 'player2_points', 'player1_approved', 'player2_approved', 'group')
@@ -46,5 +50,6 @@ class SetResultAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Group, GroupAdmin)
+admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Tournament, TournamentAdmin)
 admin.site.register(SetResult, SetResultAdmin)

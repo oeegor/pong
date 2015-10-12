@@ -4,14 +4,17 @@
     Your tournaments:
     <ul>
     {% for t in joined_tournaments %}
+      {% if forloop.first %}
+          <h1>Your tournaments</h1>
+      {% endif %}
       <li>
         <a href="{% url 'app-tournament' t.id %}">{{ t.start_at }}</a>
       </li>
     {% endfor %}
-    </ul>
-    Available tournaments:
-    <ul>
     {% for t in available_tournaments %}
+      {% if forloop.first %}
+          <h1>Available tournaments</h1>
+      {% endif %}
       <li>
         <a href="{% url 'app-tournament' t.id %}">{{ t.start_at }}</a>
         <a href="{% url 'app-join-tournament' t.id %}">Join!</a>

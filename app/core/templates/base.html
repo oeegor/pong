@@ -15,7 +15,9 @@
       font-family: 'Cabin Sketch', cursive;
     }
     body {
+      padding: 20px;
       font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
     }
     table {
       margin: 20px;
@@ -25,8 +27,36 @@
     table tr td:first-child {
       text-align: left;
     }
+    .user {
+      margin-bottom: 20px;
+    }
     .centered-text {
       text-align: center;
+    }
+    blockquote {
+      quotes: "\201C" "\201D";
+      font-style: italic;
+      margin: 0 0 5px 0;
+    }
+    blockquote::before {
+      content: open-quote;
+    }
+    blockquote::after {
+      content: close-quote;
+    }
+    .quote-author {
+      font-weight: bold;
+      color: #444;
+    }
+    .quote-comment::before {
+      content: ' | ';
+    }
+    .quote {
+      margin-left: 20px;
+    }
+    .quote p {
+      font-size: 14px;
+      margin: 0;
     }
     </style>
   </head>
@@ -34,9 +64,27 @@
   <div id="layout" class="layout">
 
     {% block user %}
-      <div>
-        {{ request.user.email }}
-        <a href="{% url 'logout' %}">Exit</a>
+      <div class='user'>
+        <form
+          action="{% url 'logout' %}"
+        >
+          {{ request.user.email }}
+          <button formmethod='get'>Log Out</button>
+        </form>
+      </div>
+    {% endblock %}
+
+    {% block quote %}
+      <div class='quote'>
+        <blockquote>
+          {{ quote.text }}
+        </blockquote>
+        <p>
+          <span class="quote-author">{{ quote.author }}</span>
+          {% if quote.comment %}
+          <span class="quote-comment">{{ quote.comment }}</span>
+          {% endif %}
+        </p>
       </div>
     {% endblock %}
 

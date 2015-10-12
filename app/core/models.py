@@ -190,3 +190,9 @@ class SetResult(models.Model):
 
     class Meta:
         unique_together = [('group', 'player1', 'player2')]
+
+
+class Quote(models.Model):
+    text = models.TextField()
+    author = models.TextField(default='unknown')
+    comment = models.TextField(null=True, blank=True)
