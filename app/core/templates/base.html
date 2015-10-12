@@ -13,6 +13,13 @@
     <style>
     h1, h2, h3 {
       font-family: 'Cabin Sketch', cursive;
+      margin: 20px 0;
+    }
+    ul {
+      padding-left: 0;
+    }
+    ul li {
+      margin-left: 40px;
     }
     body {
       padding: 20px;
@@ -29,6 +36,7 @@
     }
     .user {
       margin-bottom: 20px;
+      float: right;
     }
     .centered-text {
       text-align: center;
@@ -52,11 +60,15 @@
       content: ' | ';
     }
     .quote {
-      margin-left: 20px;
+      float: left;
     }
     .quote p {
       font-size: 14px;
       margin: 0;
+    }
+    .content {
+      clear: both;
+      padding-top: 5px;
     }
     </style>
   </head>
@@ -87,8 +99,9 @@
         </p>
       </div>
     {% endblock %}
-
+    <div class='content'>
     {% block content %}{% endblock %}
+    </div>
 
   </div>
 
