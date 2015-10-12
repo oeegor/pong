@@ -12,12 +12,8 @@ RAVEN_CONFIG = {
     'dsn': os.environ['SENTRY_DSN'],
 }
 
-
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ['SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET']
-
-_media_hash_path = os.path.join(os.environ['APP_ROOT'], '.media-hash')
-MEDIA_HASH = open(_media_hash_path).read()
 
 try:
     from .local import *
