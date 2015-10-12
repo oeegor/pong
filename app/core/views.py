@@ -57,7 +57,13 @@ def join_tournament(request, tournament_id):
 def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
     if request.method == 'GET':
         form = SetResultForm(
-            initial={'group': group_id, 'player1': player1_id, 'player2': player2_id},
+            initial={
+                'group': group_id,
+                'player1': player1_id,
+                'player2': player2_id,
+                'player1_approved': player1_id == str(request.user.pk),
+                'player2_approved': player2_id == str(request.user.pk),
+            },
         )
         form.set_hidden_inputs()
         ctx = {

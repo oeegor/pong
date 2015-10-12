@@ -135,7 +135,6 @@ class Group(models.Model):
             table[i][j].score = r.get_score(True)
             table[j][i].score = r.get_score(False)
         table.set_places()
-        print table
         return table
 
     def __unicode__(self):
