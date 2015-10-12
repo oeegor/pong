@@ -7,6 +7,12 @@ import dj_database_url
 from common import *
 
 DATABASES = {'default': dj_database_url.parse(os.environ['APP_DB'])}
+
+RAVEN_CONFIG = {
+    'dsn': os.environ['SENTRY_DSN'],
+}
+
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ['SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET']
 
