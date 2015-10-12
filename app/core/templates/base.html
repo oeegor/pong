@@ -25,6 +25,9 @@
     table tr td:first-child {
       text-align: left;
     }
+    .centered-text {
+      text-align: center;
+    }
     </style>
   </head>
   <body>
@@ -33,7 +36,7 @@
     {% block user %}
       <div>
         {{ request.user.email }}
-        <a href="{% url 'logout' %}?noredirect">Exit</a>
+        <a href="{% url 'logout' %}">Exit</a>
       </div>
     {% endblock %}
 

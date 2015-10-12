@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block user %}{% endblock %}
+
+{% block content %}
+    <h1 class='centered-text'>Live Long - Play Pong</h1>
+
+    <form
+      action="{% url 'social:begin' backend='google-oauth2' %}"
+      class='centered-text'
+    >
+      <button formmethod='get'>Log In</button>
+    </form>
+
+{% endblock %}
