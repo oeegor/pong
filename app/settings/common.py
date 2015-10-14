@@ -2,6 +2,7 @@
 
 import os
 from .log import *
+from .mail import *
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
