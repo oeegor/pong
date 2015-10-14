@@ -1,10 +1,11 @@
 # coding: utf-8
 
-from datetime import datetime
+from datetime import date, datetime
 from random import shuffle
 
+from dj_templated_mail.logic import send_templated_mail
 from django.core.validators import MaxValueValidator
-from django.db import models
+from django.db import models, transaction
 
 
 class Table(list):
@@ -92,9 +93,11 @@ class Score(object):
 class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
     created_at = models.DateTimeField(default=datetime.utcnow)
-    start_at = models.DateField()
+    name = models.CharField(max_length=256)
+    started_at = models.DateField(null=True, blank=True)
     end_at = models.DateField(null=True, blank=True)
 
+    @transaction.atomic
     def create_groups(self, capacity):
         if self.groups.all().exists():
             return
@@ -112,9 +115,21 @@ class Tournament(models.Model):
             i += 1
             if i == capacity:
                 i = 0
+        self.started_at = date.today()
+        self.save(update_fields=['started_at'])
+
+    def send_tournament_started_email(self):
+        for group in self.groups.all().prefetch_related('participants'):
+            mails = [p.email for p in group.participants.all()]
+            send_templated_mail(
+                template_name='tournament_has_started',
+                context={'group': {'name': group.name, 'table': group.get_table()}},
+                recipients=mails,
+                sender='donotreply-pongota@ostrovok.ru',
+            )
 
     def __unicode__(self):
-        return u'Tournament {}| {}'.format(self.pk, self.start_at)
+        return u'Tournament {}| {}'.format(self.pk, self.name)
 
 
 class Group(models.Model):
@@ -123,7 +138,7 @@ class Group(models.Model):
     participants = models.ManyToManyField('account.User')
     created_at = models.DateTimeField(default=datetime.utcnow)
 
-    def get_table(self, user_id):
+    def get_table(self, user_id=None):
         participants = self.participants.all().order_by('email')
         table = Table(participants, user_id)
         names = [p.short_email for p in participants]
@@ -151,8 +166,8 @@ class SetResult(models.Model):
     player2 = models.ForeignKey('account.User', related_name='player2')
 
     player1_wins = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)])
-    player1_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
-    player2_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(11)])
+    player1_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(33)])
+    player2_points = models.PositiveSmallIntegerField(validators=[MaxValueValidator(33)])
 
     player1_approved = models.BooleanField(default=False)
     player2_approved = models.BooleanField(default=False)
@@ -182,6 +197,21 @@ class SetResult(models.Model):
             wins=p1_wins,
             balls_win=p1_points,
             balls_lose=p2_points,
+        )
+
+    def send_group_notification(self):
+        mails = [p.email for p in self.group.participants.all()]
+        group = self.group
+        send_templated_mail(
+            template_name='new_result_added',
+            context={
+                'player1_name': self.player1.short_email,
+                'player2_name': self.player2.short_email,
+                'score': self.get_score(is_player1=True).score,
+                'group': {'name': group.name, 'table': group.get_table()}
+            },
+            recipients=mails,
+            sender='donotreply-pongota@ostrovok.ru',
         )
 
     def __unicode__(self):

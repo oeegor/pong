@@ -82,7 +82,8 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
             return {
                 'form': form
             }
-        form.save()
+        new_result = form.save()
+        new_result.send_group_notification()
         return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))
 
 

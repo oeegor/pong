@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'account',
     'core',
+    'dj_templated_mail',
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'social.apps.django_app.default',

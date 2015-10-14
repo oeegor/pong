@@ -1,0 +1,47 @@
+
+<h2>{{ g.name }}</h2>
+<table rules="all" cellpadding="7">
+{% with g.table as table %}
+  <thead>
+    <tr>
+      <th></th>
+      {% for player in table.players %}
+        <th>{{ player.short_email }}</th>
+      {% endfor %}
+      <th>Points</th>
+      <th>Sets</th>
+      <th>Balls</th>
+      <th>Place</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for row in table %}
+    <tr>
+      <td><b>{{ row.player1.short_email }}</b></td>
+      {% for cell in row %}
+        {% if cell.score %}
+          <td>
+            {{ cell.score.score }}
+            {% if not cell.is_approved %}
+            <a href="{% url 'app-approve-set-result' cell.set_result.pk %}">APPROVE</a>
+            {% endif %}
+          </td>
+        {% elif cell.is_filler %}
+          <td>x</td>
+        {% elif cell.is_current_user %}
+          <td>
+            <a href="{% url 'app-add-set-result' tournament.pk g.pk cell.player1.pk cell.player2.pk %}">ADD</a>
+          </td>
+        {% else %}
+          <td></td>
+        {% endif %}
+      {% endfor %}
+      <td>{{ row.points }}</td>
+      <td>{{ row.sets }}</td>
+      <td>{{ row.balls }}</td>
+      <td>{{ row.place }}</td>
+    </tr>
+  {% endfor %}
+{% endwith %}
+</tbody>
+</table>

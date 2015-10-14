@@ -7,7 +7,7 @@
           <h1>Your tournaments</h1>
       {% endif %}
       <li>
-        <a href="{% url 'app-tournament' t.id %}">{{ t.start_at }}</a>
+        <a href="{% url 'app-tournament' t.id %}">{{ t.name }}</a>
       </li>
     {% endfor %}
     {% for t in available_tournaments %}
@@ -15,7 +15,7 @@
           <h1>Available tournaments</h1>
       {% endif %}
       <li>
-        <a href="{% url 'app-tournament' t.id %}">{{ t.start_at }}</a>
+        <a href="{% url 'app-tournament' t.id %}">{{ t.name }}</a>
         <a href="{% url 'app-join-tournament' t.id %}">Join!</a>
       </li>
     {% endfor %}
