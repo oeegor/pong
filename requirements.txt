@@ -1,7 +1,7 @@
 chardet==2.3.0
 colorama==0.2.5
 dj-database-url==0.3.0
-dj-templated-mail==0.1.2
+dj-templated-mail==0.1.3
 Django==1.8.5
 django-extensions==1.5.7
 gunicorn==19.3.0
