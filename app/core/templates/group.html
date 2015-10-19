@@ -23,7 +23,7 @@
           <td>
             {{ cell.score.score }}
             {% if not cell.is_approved %}
-            <a href="{{ request.get_host }}{% url 'app-approve-set-result' cell.set_result.pk %}">APPROVE</a>
+            <a href="{% url 'app-approve-set-result' cell.set_result.pk %}">APPROVE</a>
             {% endif %}
           </td>
         {% elif cell.is_filler %}
