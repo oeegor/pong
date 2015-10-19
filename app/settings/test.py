@@ -8,14 +8,13 @@ DATABASES = {
         'NAME': 'pong',
         'USER': 'pong',
         'PASSWORD': 'ping',
-        'HOST': 'dev94-db',
+        'HOST': 'localhost',
         'PORT': 5432,
         'TEST': {
             'NAME': 'test_pong',
         },
     },
 }
-
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''

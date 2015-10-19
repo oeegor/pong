@@ -101,7 +101,7 @@ class Tournament(models.Model):
     def create_groups(self, capacity):
         if self.groups.all().exists():
             return
-        names = ['Tech Ninjas', 'The Nerd Herd', 'The Awakening', 'United Ration']
+        names = ['Tech Ninjas', 'The Nerd Herd', 'Bears', 'Aztecs']
         shuffle(names)
         players = self.participants.all().order_by('?')
         i = 0
