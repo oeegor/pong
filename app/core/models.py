@@ -146,7 +146,7 @@ class Group(models.Model):
             i = names.index(r.player1.short_email)
             j = names.index(r.player2.short_email)
             table[i][j].set_result = table[j][i].set_result = r
-            table[i][j].is_approved = table[j][i].is_approved = r.is_approved_by_user(user_id)
+            table[i][j].is_approved = table[j][i].is_approved = r.is_approved
             table[i][j].score = r.get_score(True)
             table[j][i].score = r.get_score(False)
         table.set_places()
@@ -174,13 +174,9 @@ class SetResult(models.Model):
 
     created_at = models.DateTimeField(default=datetime.utcnow)
 
-    def is_approved_by_user(self, user_id):
-        if user_id == self.player1_id:
-            return self.player1_approved
-        elif user_id == self.player2_id:
-            return self.player2_approved
-        else:
-            return
+    @property
+    def is_approved(self):
+        return self.player1_approved and self.player2_approved
 
     def get_score(self, is_player1):
 
