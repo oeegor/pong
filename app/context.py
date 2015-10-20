@@ -12,7 +12,7 @@ def build_context(request):
         'logout': reverse('logout'),
     }
     return {'ctx': {
-        'auth_backends': load_backends(settings.AUTHENTICATION_BACKENDS).keys(),
+        'auth_backends': list(load_backends(settings.AUTHENTICATION_BACKENDS).keys()),
         'urls': urls,
         'DEBUG': settings.DEBUG,
         # 'MEDIA_HASH': settings.MEDIA_HASH,

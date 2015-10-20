@@ -4,7 +4,7 @@ import os
 
 import dj_database_url
 
-from common import *
+from .common import *
 
 DATABASES = {'default': dj_database_url.parse(os.environ['APP_DB'])}
 

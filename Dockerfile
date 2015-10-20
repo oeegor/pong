@@ -3,18 +3,25 @@ FROM phusion/baseimage:0.9.17
 ENV HOME=/root
 CMD ["/sbin/my_init"]
 
-# our project build commands
 EXPOSE 80
 
+RUN echo 'v1'
+
 RUN set -xe \
+    # for python 3.5
+    && DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:fkrull/deadsnakes \
     && apt-get update -qq \
-    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -qq \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -qq
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -qq \
         libpq-dev \
         nginx \
-        python-dev \
-        python-pip \
+        python3.5 \
+        python3.5-dev \
+        python3-setuptools \
 
+    && rm /usr/bin/python3 && ln -s /usr/bin/python3.5 /usr/bin/python3 \
+    && easy_install3 pip \
     && locale-gen en_US.UTF-8 ru_RU.UTF-8 \
 
     # we provide our config
@@ -26,9 +33,8 @@ RUN set -xe \
 
 WORKDIR /opt/app/
 
-RUN pip install pip --upgrade
 COPY requirements.txt /opt/app/
-RUN pip install -r requirements.txt --use-wheel
+RUN pip3.5 install -r requirements.txt
 
 COPY etc/ /etc/
 

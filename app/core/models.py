@@ -35,18 +35,18 @@ class TableRow(list):
     def balls(self):
         win = sum([s.score.balls_win for s in self if s.score])
         lose = sum([s.score.balls_lose for s in self if s.score])
-        return u'{}:{}'.format(win, lose)
+        return '{}:{}'.format(win, lose)
 
     @property
     def sets(self):
         win = sum([s.score.wins for s in self if s.score])
         lose = sum([s.score.loses for s in self if s.score])
-        return u'{}:{}'.format(win, lose)
+        return '{}:{}'.format(win, lose)
 
     @property
     def points(self):
         points = sum([s.score.points for s in self if s.score])
-        return u'{}'.format(points)
+        return '{}'.format(points)
 
 
 class TableCell(object):
@@ -58,11 +58,11 @@ class TableCell(object):
         self.is_current_user = is_current_user
         self.is_filler = player1.pk == player2.pk
 
-    def __unicode__(self):
-        return u'<Cell {}>'.format(self.score)
+    def __str__(self):
+        return '<Cell {}>'.format(self.score)
 
     def __repr__(self):
-        return unicode(self)
+        return str(self)
 
 
 class Score(object):
@@ -71,11 +71,11 @@ class Score(object):
         self.balls_win = balls_win
         self.balls_lose = balls_lose
 
-    def __unicode__(self):
-        return u'<Score {}>'.format(self.score)
+    def __str__(self):
+        return '<Score {}>'.format(self.score)
 
     def __repr__(self):
-        return unicode(self)
+        return str(self)
 
     @property
     def loses(self):
@@ -87,7 +87,7 @@ class Score(object):
 
     @property
     def score(self):
-        return u'{}:{}'.format(self.wins, self.loses)
+        return '{}:{}'.format(self.wins, self.loses)
 
 
 class Tournament(models.Model):
@@ -128,8 +128,8 @@ class Tournament(models.Model):
                 sender='donotreply-pongota@ostrovok.ru',
             )
 
-    def __unicode__(self):
-        return u'Tournament {}| {}'.format(self.pk, self.name)
+    def __str__(self):
+        return 'Tournament {}| {}'.format(self.pk, self.name)
 
 
 class Group(models.Model):
@@ -152,8 +152,8 @@ class Group(models.Model):
         table.set_places()
         return table
 
-    def __unicode__(self):
-        return u'Group {}| {}'.format(self.name, self.tournament)
+    def __str__(self):
+        return 'Group {}| {}'.format(self.name, self.tournament)
 
     class Meta:
         unique_together = [('name', 'tournament')]
@@ -210,8 +210,8 @@ class SetResult(models.Model):
             sender='donotreply-pongota@ostrovok.ru',
         )
 
-    def __unicode__(self):
-        return u'SetResult {}| {}'.format(self.player1, self.player2)
+    def __str__(self):
+        return 'SetResult {}| {}'.format(self.player1, self.player2)
 
     class Meta:
         unique_together = [('group', 'player1', 'player2')]
