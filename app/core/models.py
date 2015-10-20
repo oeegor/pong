@@ -66,10 +66,11 @@ class TableCell(object):
 
 
 class Score(object):
-    def __init__(self, wins, balls_win, balls_lose):
+    def __init__(self, wins, balls_win, balls_lose, is_approved):
         self.wins = wins
         self.balls_win = balls_win
         self.balls_lose = balls_lose
+        self.is_approved = is_approved
 
     def __str__(self):
         return '<Score {}>'.format(self.score)
@@ -83,7 +84,7 @@ class Score(object):
 
     @property
     def points(self):
-        return int(bool(self.wins > self.loses))
+        return int(bool(self.wins > self.loses)) if self.is_approved else 0
 
     @property
     def score(self):
@@ -193,6 +194,7 @@ class SetResult(models.Model):
             wins=p1_wins,
             balls_win=p1_points,
             balls_lose=p2_points,
+            is_approved=self.is_approved,
         )
 
     def send_group_notification(self):
