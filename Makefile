@@ -32,6 +32,18 @@ up: stop
 # target: buildup - build and start docker image
 buildup: stop build up
 
+# target: makemessages - generate message files
+makemessages:
+	./app/manage.py makemessages --locale ru --locale en --ignore env
+
+
+# target: tx - set translations
+tx:
+	tx set --auto-local -r pong.djangopo 'locale/<lang>/LC_MESSAGES/django.po' \
+	--source-lang en --type PO --source-file locale/en/LC_MESSAGES/django.po --execute
+	# tx set -r pong.djangopo -l en locale/en/LC_MESSAGES/django.po
+	tx set -r pong.djangopo -l ru locale/ru/LC_MESSAGES/django.po
+
 # target: help — this help
 help:
 	@egrep "^# target:" [Mm]akefile
