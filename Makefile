@@ -12,6 +12,10 @@ rm-pyc:
 setup: env/bin/activate requirements.txt
 	. env/bin/activate; pip install -Ur requirements.txt
 
+# target: pip - install python requirements
+pip:
+	pip install -r requirements.txt
+
 # target: run — run project
 run: env/bin/activate requirements.txt
 	. env/bin/activate; gunicorn --reload --config etc/gunicorn/chrn.py chrn.wsgi
