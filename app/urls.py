@@ -24,6 +24,7 @@ urlpatterns += [
     url(r'^tournament/([0-9]+)/join/?$', core.views.join_tournament, name='app-join-tournament'),
 
     url(r'^rating-list$', rating.views.rating_list, name='rating-list'),
+    url(r'^rating-history/([0-9]+)$', rating.views.rating_history, name='rating-history'),
 
     url(r'^group/([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+)/add-result/?$', core.views.add_set_result, name='app-add-set-result'),
     url(r'^set-result/([0-9]+)/approve/?$', core.views.approve_set_result, name='app-approve-set-result'),

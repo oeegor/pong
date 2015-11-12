@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block style %}
+    .winner td {
+        background-color: #DDFFDD;
+    }
+    .looser td {
+        background-color: #FFDDDD;
+    }
+{% endblock %}
+
+{% block content %}
+    <p>
+        <a href="{% url 'rating-list' %}">&lt;&lt;&lt; To Rating Table</a>
+    </p>
+    <h1>PLAYER HISTORY</h1>
+    <h2>{{ player.username }}</h2>
+
+    {%  if history %}
+        <table id="history-table">
+            <tr>
+                <th class="date">When</th>
+                <th class="opponent">Opponent</th>
+                <th class="delta">Change</th>
+                <th class="rating">Rating</th>
+            </tr>
+        {%  for item in history %}
+            <tr class="{% if item.is_winner %}winner{% else %}looser{% endif %}">
+                <td class="date">{{ item.when }}</td>
+                <td class="opponent">{{ item.opponent }}</td>
+                <td class="delta">{% if not item.is_winner %}-{% endif %}{{ item.delta }}</td>
+                <td class="rating">{{ item.rating }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        <h2>Not Yet</h2>
+    {% endif %}
+
+{% endblock %}

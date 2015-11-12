@@ -184,7 +184,14 @@ class SetResult(models.Model):
         if self.player1_wins > 1:
             return self.player1
         else:
-            return self.player_2
+            return self.player2
+
+    @property
+    def looser(self):
+        if self.player1_wins < 2:
+            return self.player1
+        else:
+            return self.player2
 
     def get_score(self, is_player1):
 

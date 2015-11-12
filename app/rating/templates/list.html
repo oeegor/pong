@@ -7,6 +7,10 @@
 {% endblock %}
 
 {% block content %}
+    <div>
+        <a href="{% url 'home' %}">Tournaments</a> | <b>Ratings</b>
+    </div>
+
     <h1>RATINGS</h1>
 
     {%  if ratings %}
@@ -17,11 +21,13 @@
             </tr>
         {%  for player in ratings %}
             <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-                <td class="player">{{ player.player_name }}</td>
+                <td class="player"><a href="{% url 'rating-history' player.player_id %}">{{ player.player_name }}</a></td>
                 <td class="rating">{{ player.player_rating }}</td>
             </tr>
         {% endfor %}
         </table>
+    {% else %}
+        <h2>Not Yet</h2>
     {% endif %}
 
 {% endblock %}

@@ -6,6 +6,7 @@ from django.db import models
 
 class RatingHistory(models.Model):
     player = models.ForeignKey('account.User')
+    match = models.ForeignKey('core.SetResult')
     rating = models.DecimalField(
         max_digits=7,
         decimal_places=1,
@@ -13,4 +14,4 @@ class RatingHistory(models.Model):
     created_at = models.DateTimeField(default=datetime.utcnow)
 
     class Meta:
-        unique_together = ('player', 'created_at')
+        unique_together = ('player', 'match')
