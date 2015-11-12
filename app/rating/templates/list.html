@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block style %}
+    .odd td {
+        background-color: #DDDDDD;
+    }
+{% endblock %}
+
+{% block content %}
+    <div>
+        <a href="{% url 'home' %}">Tournaments</a> | <b>Ratings</b>
+    </div>
+
+    <h1>RATINGS</h1>
+
+    {%  if ratings %}
+        <table id="rating-table">
+            <tr>
+                <th class="player">Player</th>
+                <th class="rating">Rating</th>
+            </tr>
+        {%  for player in ratings %}
+            <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+                <td class="player"><a href="{% url 'rating-history' player.player_id %}">{{ player.player_name }}</a></td>
+                <td class="rating">{{ player.player_rating }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        <h2>Not Yet</h2>
+    {% endif %}
+
+    <div>
+        All ratings are calculated using this system <a href="http://reiting.com.ua/rating/about/">http://reiting.com.ua/rating/about/</a>.
+        We just do not use weight.
+    </div>
+
+{% endblock %}

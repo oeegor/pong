@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <div>
+        <b>Tournaments</b> | <a href="{% url 'rating-list' %}">Ratings</a>
+    </div>
+
+    <h1>TOURNAMENTS</h1>
+
     <ul>
     {% for t in joined_tournaments %}
       {% if forloop.first %}

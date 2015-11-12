@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'account',
     'core',
+    'rating',
     'dj_templated_mail',
     'django_extensions',
     'raven.contrib.django.raven_compat',
