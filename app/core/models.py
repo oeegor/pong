@@ -179,6 +179,13 @@ class SetResult(models.Model):
     def is_approved(self):
         return self.player1_approved and self.player2_approved
 
+    @property
+    def winner(self):
+        if self.player1_wins > 1:
+            return self.player1
+        else:
+            return self.player_2
+
     def get_score(self, is_player1):
 
         if is_player1:
