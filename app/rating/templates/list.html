@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block style %}
+    .odd td {
+        background-color: #DDDDDD;
+    }
+{% endblock %}
+
+{% block content %}
+    <h1>RATINGS</h1>
+
+    {%  if ratings %}
+        <table id="rating-table">
+            <tr>
+                <th class="player">Player</th>
+                <th class="rating">Rating</th>
+            </tr>
+        {%  for player in ratings %}
+            <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+                <td class="player">{{ player.player_name }}</td>
+                <td class="rating">{{ player.player_rating }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+
+{% endblock %}

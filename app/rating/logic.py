@@ -1,6 +1,7 @@
 # coding: utf-8
+from account.models import User
 from rating.models import RatingHistory
-from django.db import transaction
+from django.db import transaction, connection
 
 
 class PlayerRating(object):
@@ -98,3 +99,39 @@ def update_rating(rating_change):
             created_at=rating_change.when_changed,
             rating=rating_change.new_looser_rating.rating,
         )
+
+
+def get_rating_list():
+    users = {}
+    for u in User.objects.all():
+        users[u.pk] = u.username
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+            SELECT DISTINCT ON(player_id)
+              player_id,
+                rating
+            FROM rating_ratinghistory
+            ORDER BY player_id, created_at DESC
+        """
+    )
+    ratings = {}
+    for player_id, rating in cursor.fetchall():
+        ratings[player_id] = rating
+
+    res = []
+    for player_id, player_name in iter(users.items()):
+        res.append({
+            'player_id': player_id,
+            'player_name': player_name,
+            'player_rating': ratings.get(player_id, 0)
+        })
+
+    res = sorted(
+        res,
+        key=lambda pl: (pl['player_rating'] * -1, pl['player_name'])
+    )
+
+    return res
