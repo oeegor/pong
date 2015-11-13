@@ -161,7 +161,11 @@ class Group(models.Model):
 
 
 class SetResult(models.Model):
-    group = models.ForeignKey('Group', related_name='results')
+    group = models.ForeignKey(
+        'Group',
+        null=True, blank=True,
+        related_name='results'
+    )
 
     player1 = models.ForeignKey('account.User', related_name='player1')
     player2 = models.ForeignKey('account.User', related_name='player2')
@@ -221,6 +225,24 @@ class SetResult(models.Model):
                 'player2_name': self.player2.short_email,
                 'score': self.get_score(is_player1=True).score,
                 'group': {'name': group.name, 'table': group.get_table()}
+            },
+            recipients=mails,
+            sender='donotreply-pongota@ostrovok.ru',
+        )
+
+    def send_approve_notification(self, sender_id):
+        opponent = self.player1
+        if self.player1.pk == sender_id:
+            opponent = self.player2
+
+        mails = [opponent.email]
+        send_templated_mail(
+            template_name='need_result_approve',
+            context={
+                'player1_name': self.player1.short_email,
+                'player2_name': self.player2.short_email,
+                'score': self.get_score(is_player1=True).score,
+                'match_id': self.pk,
             },
             recipients=mails,
             sender='donotreply-pongota@ostrovok.ru',

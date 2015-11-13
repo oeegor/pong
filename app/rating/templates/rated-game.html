@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="opponent_id">Opponent</label>
+        <select id="opponent_id" name="opponent_id">
+            {%  for user in users %}
+                <option value="{{ user.pk }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Next">
+    </form>
+{% endblock %}

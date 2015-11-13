@@ -1,13 +1,16 @@
 # coding: utf-8
+from copy import deepcopy
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Count
-from django.http import HttpResponseRedirect
+from django.db import transaction
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 
 from account.models import User
 from core.forms import SetResultForm
 from core.models import SetResult, Tournament
+from rating.logic import calculate_rating_changes, update_rating
 from utils import render_to
 
 
@@ -56,14 +59,16 @@ def join_tournament(request, tournament_id):
 @render_to('add_set_result.html')
 def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
     if request.method == 'GET':
+        initial = {
+            'player1': player1_id,
+            'player2': player2_id,
+            'player1_approved': player1_id == str(request.user.pk),
+            'player2_approved': player2_id == str(request.user.pk),
+        }
+        if group_id:
+            initial['group'] = group_id
         form = SetResultForm(
-            initial={
-                'group': group_id,
-                'player1': player1_id,
-                'player2': player2_id,
-                'player1_approved': player1_id == str(request.user.pk),
-                'player2_approved': player2_id == str(request.user.pk),
-            },
+            initial=initial,
         )
         form.set_hidden_inputs()
         ctx = {
@@ -74,7 +79,10 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
         return ctx
 
     elif request.method == 'POST':
-        form = SetResultForm(request.POST)
+        post_data = deepcopy(request.POST)
+        if post_data['group'] == '0':
+            del post_data['group']
+        form = SetResultForm(post_data)
         if str(request.user.pk) not in [player1_id, player2_id]:
             form.add_error(None, 'cannot set scores for not your games')
         if not form.is_valid():
@@ -83,19 +91,43 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
                 'form': form
             }
         new_result = form.save()
-        new_result.send_group_notification()
-        return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))
+        if 'group' in post_data:
+            new_result.send_group_notification()
+        else:
+            new_result.send_approve_notification(request.user.pk)
+
+        if int(tournament_id):
+            return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))
+        else:
+            return HttpResponseRedirect(reverse('rating-list'))
 
 
 @login_required(login_url='/login/')
 def approve_set_result(request, set_result_id):
     sr = SetResult.objects.filter(pk=set_result_id).first()
-    if sr:
-        user_id = request.user.pk
+    if not sr:
+        return HttpResponseBadRequest('Match with id {} does not exist'.format(set_result_id))
+
+    user_id = request.user.pk
+    if sr.player1.pk != user_id and sr.player2.pk != user_id:
+        return HttpResponseBadRequest('You are not the participant of the match {}'.format(set_result_id))
+
+    if sr.is_approved:
+        return HttpResponseBadRequest('Match already approved')
+
+    with transaction.atomic():
         if sr.player1.pk == user_id:
             sr.player1_approved = True
-            sr.save()
         elif sr.player2.pk == user_id:
             sr.player2_approved = True
-            sr.save()
-    return HttpResponseRedirect(reverse('app-tournament', args=[sr.group.tournament.pk]))
+
+        sr.save()
+
+        if sr.is_approved:
+            rating_changes = calculate_rating_changes(sr)
+            update_rating(rating_changes)
+
+    if sr.group:
+        return HttpResponseRedirect(reverse('app-tournament', args=[sr.group.tournament.pk]))
+    else:
+        return HttpResponseRedirect(reverse('rating-list'))
