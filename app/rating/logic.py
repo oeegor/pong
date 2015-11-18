@@ -1,4 +1,5 @@
 # coding: utf-8
+from datetime import datetime
 from account.models import User
 from rating.models import RatingHistory
 from django.db import transaction, connection
@@ -32,11 +33,12 @@ def get_player_rating(player, when):
 
 
 class RatingChange(object):
-    def __init__(self, match, winner_rating, looser_rating, delta):
+    def __init__(self, match, winner_rating, looser_rating, delta, when_changed):
         self.match = match
 
         self.winner_rating = winner_rating
         self.looser_rating = looser_rating
+        self.when_changed = when_changed
 
         self.delta = delta
 
@@ -48,16 +50,14 @@ class RatingChange(object):
     def looser(self):
         return self.match.looser
 
-    @property
-    def when_changed(self):
-        return self.match.created_at
-
 
 def calculate_rating_changes(match):
     assert match.is_approved
 
-    winner_rating = get_player_rating(match.winner, match.created_at)
-    looser_rating = get_player_rating(match.looser, match.created_at)
+    when = datetime.utcnow()
+
+    winner_rating = get_player_rating(match.winner, when)
+    looser_rating = get_player_rating(match.looser, when)
 
     delta = 0
 
@@ -89,6 +89,7 @@ def calculate_rating_changes(match):
         winner_rating=new_winner_rating,
         looser_rating=new_looser_rating,
         delta=delta,
+        when_changed=when,
     )
 
 
@@ -144,15 +145,12 @@ def get_rating_list():
 
 
 class RatingHistoryItem(object):
-    def __init__(self, player, match, delta, rating):
+    def __init__(self, player, match, when, delta, rating):
         self.player = player
         self.match = match
         self.delta = delta
         self.rating = rating
-
-    @property
-    def when(self):
-        return self.match.created_at
+        self.when = when
 
     @property
     def is_winner(self):
@@ -177,6 +175,7 @@ def get_player_rating_history(player):
             RatingHistoryItem(
                 player,
                 item.match,
+                when=item.created_at,
                 delta=delta,
                 rating=item.rating,
             )
