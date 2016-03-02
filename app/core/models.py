@@ -115,7 +115,7 @@ class Tournament(models.Model):
         for idx, group in enumerate(groups):
             dj_group = Group.objects.create(
                 tournament=self,
-                name=chr(96 + idx).upper(),
+                name=chr(97 + idx).upper(),
             )
             dj_group.participants.add(*group)
 
