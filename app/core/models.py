@@ -112,11 +112,11 @@ class Tournament(models.Model):
             return
         players = list(self.participants.all().order_by('?'))
         groups = split_players_to_groups(players)
-        for idx in range(groups):
+        for idx, group in enumerate(groups):
             Group.objects.create(
                 tournament=self,
                 name=str(unichr(96 + idx)).upper(),
-                participants=groups[idx],
+                participants=group,
             )
 
         self.started_at = date.today()
