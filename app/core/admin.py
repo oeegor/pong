@@ -5,37 +5,16 @@ from django.contrib import admin
 from .models import Group, Quote, Tournament, SetResult
 
 
-def create_groups_5(modeladmin, request, queryset):
+def create_groups(modeladmin, request, queryset):
     for tournament in queryset:
-        tournament.create_groups(5)
+        tournament.create_groups()
         tournament.send_tournament_started_email()
-create_groups_5.short_description = "Generate groups with 5 players"
-
-
-def create_groups_4(modeladmin, request, queryset):
-    for tournament in queryset:
-        tournament.create_groups(4)
-        tournament.send_tournament_started_email()
-create_groups_4.short_description = "Generate groups with 4 players"
-
-
-def create_groups_2(modeladmin, request, queryset):
-    for tournament in queryset:
-        tournament.create_groups(2)
-        tournament.send_tournament_started_email()
-create_groups_2.short_description = "Generate groups with 2 players"
-
-
-def create_groups_6(modeladmin, request, queryset):
-    for tournament in queryset:
-        tournament.create_groups(6)
-        tournament.send_tournament_started_email()
-create_groups_6.short_description = "Generate groups with 6 players"
+create_groups.short_description = "Generate groups"
 
 
 class TournamentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'started_at', 'end_at')
-    actions = [create_groups_4, create_groups_5, create_groups_6, create_groups_2]
+    actions = [create_groups]
 
 
 class GroupAdmin(admin.ModelAdmin):

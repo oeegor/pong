@@ -1,11 +1,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
-from random import shuffle
 
 from dj_templated_mail.logic import send_templated_mail
+from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models, transaction
+
+from utils import split_players_to_groups
 
 
 class Table(list):
@@ -91,6 +93,12 @@ class Score(object):
         return '{}:{}'.format(self.wins, self.loses)
 
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
+
 class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
     created_at = models.DateTimeField(default=datetime.utcnow)
@@ -99,23 +107,18 @@ class Tournament(models.Model):
     end_at = models.DateField(null=True, blank=True)
 
     @transaction.atomic
-    def create_groups(self, capacity):
+    def create_groups(self):
         if self.groups.all().exists():
             return
-        names = ['Tech Ninjas', 'The Nerd Herd', 'Bears', 'Aztecs']
-        shuffle(names)
-        players = self.participants.all().order_by('?')
-        i = 0
-        for player in players:
-            if i == 0:
-                group = Group.objects.create(
-                    tournament=self,
-                    name=names and names.pop(0) or 'noname',
-                )
-            group.participants.add(player)
-            i += 1
-            if i == capacity:
-                i = 0
+        players = list(self.participants.all().order_by('?'))
+        groups = split_players_to_groups(players)
+        for idx in range(groups):
+            Group.objects.create(
+                tournament=self,
+                name=str(unichr(96 + idx)).upper(),
+                participants=groups[idx],
+            )
+
         self.started_at = date.today()
         self.save(update_fields=['started_at'])
 
@@ -245,7 +248,7 @@ class SetResult(models.Model):
                 'match_id': self.pk,
             },
             recipients=mails,
-            sender='donotreply-pongota@ostrovok.ru',
+            sender=settings.EMAIL_HOST_USER,
         )
 
     def __str__(self):
