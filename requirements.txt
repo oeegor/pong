@@ -1,7 +1,7 @@
 dj-database-url==0.3.0
 dj-templated-mail==0.1.6
 django-extensions==1.5.7
-Django==1.9b1
+Django==1.9.3
 gunicorn==19.3.0
 oauthlib==1.0.3
 psycopg2==2.6.1

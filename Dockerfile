@@ -1,5 +1,5 @@
 # base image
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:0.9.18
 ENV HOME=/root
 CMD ["/sbin/my_init"]
 
