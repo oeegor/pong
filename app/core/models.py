@@ -12,21 +12,21 @@ from utils import split_players_to_groups
 
 class Table(list):
     def __init__(self, players, user_id):
-        super(list, self).__init__()
+        super().__init__()
         self.players = players
         for p1 in self.players:
             row = TableRow(players, p1, user_id)
             self.append(row)
 
     def set_places(self):
-        sorted_rows = sorted(self, key=lambda i: i.points, reverse=True)
-        for place, row in enumerate(sorted_rows, start=1):
+        self.sort(key=lambda i: i.points, reverse=True)
+        for place, row in enumerate(self, start=1):
             row.place = place
 
 
 class TableRow(list):
     def __init__(self, players, player1, user_id):
-        super(list, self).__init__()
+        super().__init__()
         self.player1 = player1
         self.place = None
         for player2 in players:
