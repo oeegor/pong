@@ -58,6 +58,8 @@ def join_tournament(request, tournament_id):
 @login_required(login_url='/login/')
 @render_to('add_set_result.html')
 def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
+    player1 = User.objects.get(pk=player1_id)
+    player2 = User.objects.get(pk=player2_id)
     if request.method == 'GET':
         initial = {
             'player1': player1_id,
@@ -70,10 +72,8 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
         form = SetResultForm(
             initial=initial,
         )
-        form.set_hidden_inputs()
+        form.set_inputs(player1=player1, player2=player2)
         ctx = {
-            'player1': User.objects.get(pk=player1_id),
-            'player2': User.objects.get(pk=player2_id),
             'form': form
         }
         return ctx
@@ -86,7 +86,7 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
         if str(request.user.pk) not in [player1_id, player2_id]:
             form.add_error(None, 'cannot set scores for not your games')
         if not form.is_valid():
-            form.set_hidden_inputs()
+            form.set_inputs(player1=player1, player2=player2)
             return {
                 'form': form
             }
