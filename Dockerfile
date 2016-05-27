@@ -45,4 +45,4 @@ RUN set -ex \
     && chown -R www-data. /opt/app/ /var/log/app /var/log/nginx \
     && nginx -t \
     && find static -type f -print | sort | xargs cat | md5sum | awk '{ print $1 }' > .media-hash \
-    && ./app/manage.py collectstatic --traceback --verbosity=3 --noinput
+    && ./app/manage.py collectstatic --traceback --verbosity=3 --no-input --link
