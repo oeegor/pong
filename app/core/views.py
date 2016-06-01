@@ -14,6 +14,13 @@ from rating.logic import calculate_rating_changes, update_rating
 from utils import render_to
 
 
+def build_approve_base_url(request):
+    return "%s://%s:%s" % (
+	request.scheme,
+	request.get_host(),
+	request.META.get("HTTP_X_FORWARDED_PORT", "80"),
+)
+
 @login_required(login_url='/login/')
 @render_to('index.html')
 def home(request):
@@ -40,9 +47,8 @@ def tournament(request, tournament_id):
         'pk': g.pk,
         } for g in t.groups.all()
     ]
-    url = "%s://%s:%s" % (request.scheme, request.get_host(), request.get_port())
     ctx = {
-	'approve_base_url': url,
+	'approve_base_url': build_approve_base_url(request),
         'tournament': t,
         'groups': groups,
         'participants': t.participants.all(),
@@ -94,8 +100,7 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
             }
         new_result = form.save()
         if 'group' in post_data:
-            url = "%s://%s:%s" % (request.scheme, request.get_host(), request.get_port())
-            new_result.send_group_notification(approve_base_url=url)
+            new_result.send_group_notification(approve_base_url=build_approve_base_url(request))
         else:
             new_result.send_approve_notification(request.user.pk)
 
