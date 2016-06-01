@@ -92,7 +92,8 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
             }
         new_result = form.save()
         if 'group' in post_data:
-            new_result.send_group_notification()
+            url = "%s://%s:%s" % (request.scheme, request.get_host(), request.get_port())
+            new_result.send_group_notification(approve_base_url=url)
         else:
             new_result.send_approve_notification(request.user.pk)
 

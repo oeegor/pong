@@ -218,7 +218,7 @@ class SetResult(models.Model):
             is_approved=self.is_approved,
         )
 
-    def send_group_notification(self):
+    def send_group_notification(self, approve_base_url):
         mails = [p.email for p in self.group.participants.all()]
         group = self.group
         send_templated_mail(
@@ -227,7 +227,8 @@ class SetResult(models.Model):
                 'player1_name': self.player1.short_email,
                 'player2_name': self.player2.short_email,
                 'score': self.get_score(is_player1=True).score,
-                'group': {'name': group.name, 'table': group.get_table()}
+                'group': {'name': group.name, 'table': group.get_table()},
+                'approve_base_url': approve_base_url,
             },
             recipients=mails,
             sender='donotreply-pongota@ostrovok.ru',
