@@ -40,7 +40,9 @@ def tournament(request, tournament_id):
         'pk': g.pk,
         } for g in t.groups.all()
     ]
+    url = "%s://%s:%s" % (request.scheme, request.get_host(), request.get_port())
     ctx = {
+	'approve_base_url': url,
         'tournament': t,
         'groups': groups,
         'participants': t.participants.all(),
