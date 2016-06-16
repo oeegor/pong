@@ -1,8 +1,32 @@
 # coding: utf-8
 
+import math
+import random
+
 from django.contrib import admin
+from django.db import transaction
 
 from .models import Group, Quote, Tournament, SetResult
+
+
+@transaction.atomic
+def cherrypick_from_groups(modeladmin, request, queryset):
+    players = []
+    for group in queryset:
+        table = group.get_table()
+        limit = int(math.ceil(len(table) / 2.))
+        for row in table[:limit-1]:
+            players.append(row.player1)
+
+    random.shuffle(players)
+    groups = split_players_to_groups(players)
+    for idx, group in enumerate(groups):
+        dj_group = Group.objects.create(
+            tournament=group.tournament,
+            name=chr(97 + idx).upper()*2,
+        )
+        dj_group.participants.add(*group)
+cherrypick_from_groups.short_description = "Cherrypick from groups"
 
 
 def create_groups(modeladmin, request, queryset):
