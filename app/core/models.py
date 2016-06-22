@@ -92,6 +92,10 @@ class Score(object):
     def score(self):
         return '{}:{}'.format(self.wins, self.loses)
 
+    @property
+    def balls(self):
+        return '{}:{}'.format(self.balls_win, self.balls_lose)
+
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -150,7 +154,11 @@ class Group(models.Model):
             i = names.index(r.player1.short_email)
             j = names.index(r.player2.short_email)
             table[i][j].set_result = table[j][i].set_result = r
-            table[i][j].is_approved = table[j][i].is_approved = r.is_approved
+            is_approved = r.is_approved
+            if user_id and user_id not in [r.player1.pk, r.player2.pk]:
+                is_approved = True
+
+            table[i][j].is_approved = table[j][i].is_approved = is_approved
             table[i][j].score = r.get_score(True)
             table[j][i].score = r.get_score(False)
         table.set_places()
