@@ -1,6 +1,16 @@
 
 {% load i18n %}
 
+<style>
+.score-cell .score {
+    margin: 0;
+}
+.score-cell .balls {
+    font-size: 10px;
+    color: #ccc;
+    margin: 0;
+}
+</style>
 <h2>{{ g.name }}</h2>
 <table rules="all" cellpadding="7">
 {% with g.table as table %}
@@ -22,8 +32,13 @@
       <td><b>{{ row.player1.full_name }}</b></td>
       {% for cell in row %}
         {% if cell.score %}
-          <td>
+          <td class="score-cell">
+            <p class="score">
             {{ cell.score.score }}
+            </p>
+            <p class="balls">
+            {{ cell.score.balls }}
+            </p>
             {% if not cell.is_approved %}
             <a href="{{ approve_base_url }}/{% url 'app-approve-set-result' cell.set_result.pk %}">APPROVE</a>
             {% endif %}
