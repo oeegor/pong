@@ -19,7 +19,9 @@ class Table(list):
             self.append(row)
 
     def set_places(self):
-        self.sort(key=lambda i: i.points, reverse=True)
+        def key(i):
+            return (int(i.points), int(i.sets.split(":")[0]), int(i.balls.split(":")[0]))
+        self.sort(key=key, reverse=True)
         for place, row in enumerate(self, start=1):
             row.place = place
 
