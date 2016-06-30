@@ -32,6 +32,7 @@ def home(request):
             .exclude(participants=request.user)
             .annotate(group_cnt=Count('groups'))
             .exclude(group_cnt__gt=0)
+            .order_by("-pk")
         )
     }
     return ctx
@@ -45,7 +46,7 @@ def tournament(request, tournament_id):
         'name': g.name,
         'table': g.get_table(request.user.pk),
         'pk': g.pk,
-        } for g in t.groups.all()
+        } for g in t.groups.all().order_by("pk")
     ]
     ctx = {
 	'approve_base_url': build_approve_base_url(request),

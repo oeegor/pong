@@ -173,6 +173,37 @@ class Group(models.Model):
         unique_together = [('name', 'tournament')]
 
 
+class Stage(models.Model):
+    name = models.CharField(max_length=256)
+    tournament = models.ForeignKey('Tournament', related_name='stages')
+    created_at = models.DateTimeField(default=datetime.utcnow)
+    deadline = models.DateTimeField(null=True)
+
+    def get_table(self, user_id=None):
+        participants = self.participants.all().order_by('email')
+        table = Table(participants, user_id)
+        names = [p.short_email for p in participants]
+        for r in self.results.all():
+            i = names.index(r.player1.short_email)
+            j = names.index(r.player2.short_email)
+            table[i][j].set_result = table[j][i].set_result = r
+            is_approved = r.is_approved
+            if user_id and user_id not in [r.player1.pk, r.player2.pk]:
+                is_approved = True
+
+            table[i][j].is_approved = table[j][i].is_approved = is_approved
+            table[i][j].score = r.get_score(True)
+            table[j][i].score = r.get_score(False)
+        table.set_places()
+        return table
+
+    def __str__(self):
+        return 'Group {}| {}'.format(self.name, self.tournament)
+
+    class Meta:
+        unique_together = [('name', 'tournament')]
+
+
 class SetResult(models.Model):
     group = models.ForeignKey(
         'Group',
