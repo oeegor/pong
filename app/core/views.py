@@ -1,4 +1,5 @@
 # coding: utf-8
+
 from copy import deepcopy
 
 from django.contrib.auth.decorators import login_required
@@ -9,17 +10,18 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 
 from account.models import User
 from core.forms import SetResultForm
-from core.models import SetResult, Tournament
+from core.models import Group, SetResult, Tournament
 from rating.logic import calculate_rating_changes, update_rating
 from utils import render_to
 
 
 def build_approve_base_url(request):
-    return "%s://%s:%s" % (
-	request.scheme,
-	request.get_host(),
-	request.META.get("HTTP_X_FORWARDED_PORT", "80"),
-)
+    return "{}://{}:{}".format(
+        request.scheme,
+        request.get_host(),
+        request.META.get("HTTP_X_FORWARDED_PORT", "80"),
+    )
+
 
 @login_required(login_url='/login/')
 @render_to('index.html')
@@ -42,17 +44,19 @@ def home(request):
 @render_to('tournament.html')
 def tournament(request, tournament_id):
     t = Tournament.objects.get(id=tournament_id)
-    groups = [{
-        'name': g.name,
-        'table': g.get_table(request.user.pk),
-        'pk': g.pk,
-        } for g in t.groups.all().order_by("pk")
-    ]
+
+    stages = list(t.stages.all().order_by("-pk"))
+
+    for stage in stages:
+        vgroups = stage.groups.all().order_by("name")
+        for vgroup in vgroups:
+            vgroup.table = vgroup.get_table(request.user.pk)
+        stage.vgroups = vgroups
+
     ctx = {
-	'approve_base_url': build_approve_base_url(request),
+        'approve_base_url': build_approve_base_url(request),
         'tournament': t,
-        'groups': groups,
-        'participants': t.participants.all(),
+        'stages': stages,
     }
     return ctx
 
@@ -66,7 +70,12 @@ def join_tournament(request, tournament_id):
 
 @login_required(login_url='/login/')
 @render_to('add_set_result.html')
-def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
+def add_set_result(request, group_id, player1_id, player2_id):
+
+    group = Group.objects.filter(pk=group_id)
+    if group.stage.is_closed:
+        return HttpResponseBadRequest("Unable to add result, stage is over")
+
     player1 = User.objects.get(pk=player1_id)
     player2 = User.objects.get(pk=player2_id)
     if request.method == 'GET':
@@ -113,9 +122,15 @@ def add_set_result(request, tournament_id, group_id, player1_id, player2_id):
 
 @login_required(login_url='/login/')
 def approve_set_result(request, set_result_id):
+
+
     sr = SetResult.objects.filter(pk=set_result_id).first()
     if not sr:
         return HttpResponseBadRequest('Match with id {} does not exist'.format(set_result_id))
+
+    group = Group.objects.filter(pk=sr.group_id)
+    if group.stage.is_closed:
+        return HttpResponseBadRequest("Unable to add result, stage is over")
 
     user_id = request.user.pk
     if sr.player1.pk != user_id and sr.player2.pk != user_id:

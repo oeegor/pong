@@ -35,6 +35,8 @@ def chunks(l, n):
 
 def split_players_to_groups(players: list) -> list:
     min_group_len = 4
+    if min_group_len >= len(players):
+        return [players]
     all_groups = []
     for i in range(min_group_len, len(players)):
         groups = list(chunks(players, i))
