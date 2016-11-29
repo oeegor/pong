@@ -40,6 +40,9 @@ buildup: stop build up
 makemessages:
 	./app/manage.py makemessages --locale ru --locale en --ignore env
 
+# target: pip-comile
+pip-compile:
+	pip-compile requirements.in -o requirements.txt
 
 # target: tx - set translations
 tx:

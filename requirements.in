@@ -1,0 +1,12 @@
+dj-database-url
+dj-templated-mail
+django-extensions
+Django
+gunicorn
+pip-tools
+psycopg2
+pytest-django
+pytest
+python-social-auth
+raven
+requests
