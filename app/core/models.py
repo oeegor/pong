@@ -17,8 +17,7 @@ class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
     created_at = models.DateTimeField(default=datetime.utcnow)
     name = models.CharField(max_length=256)
-    started_at = models.DateField(null=True, blank=True)
-    end_at = models.DateField(null=True, blank=True)
+    start_at = models.DateField(null=True, blank=True)
 
     def start(self):
         if self.stages.all().count() > 0:

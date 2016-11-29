@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from copy import deepcopy
+from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -64,6 +65,8 @@ def tournament(request, tournament_id):
 @login_required(login_url='/login/')
 def join_tournament(request, tournament_id):
     t = Tournament.objects.get(id=tournament_id)
+    if t.start_at < datetime.utcnow():
+        raise ValueError("tournament has already started")
     t.participants.add(request.user)
     return tournament(request, t.pk)
 
