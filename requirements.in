@@ -1,7 +1,7 @@
 dj-database-url
 dj-templated-mail
 django-extensions
-Django
+Django==1.9.7
 gunicorn
 pip-tools
 psycopg2
