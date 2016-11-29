@@ -40,16 +40,20 @@ class TestLogic(TestCase):
     @patch("core.models.send_templated_mail")
     def test_user_actions(self, *args, **kwargs):
 
-        t = Tournament.objects.create(name="test")
-        s = Stage.objects.create(name="test", tournament=t, deadline=datetime.utcnow() + timedelta(days=1))
-        g = Group.objects.create(name="test", stage=s)
-
         players = []
         for i in range(3):
             username = "{}@test.tu".format(i)
             user = User.objects.create_user(username=username, email=username, password=username)
             players.append(user)
-            g.participants.add(user)
+
+        t = Tournament.objects.create(name="test")
+        actions = t.get_user_actions(players[-1])
+        self.assertEqual(actions, [])
+
+        s = Stage.objects.create(name="test", tournament=t, deadline=datetime.utcnow() + timedelta(days=1))
+        g = Group.objects.create(name="test", stage=s)
+        for player in players:
+            g.participants.add(player)
 
         SetResult.objects.create(group=g, player1_wins=True, player1_points=1, player2_points=1, player1=players[-1], player1_approved=True, player2=players[0])
         SetResult.objects.create(group=g, player1_wins=True, player1_points=1, player2_points=1, player2=players[-1], player1_approved=True, player1=players[1])

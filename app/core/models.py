@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import random
 
 from dj_templated_mail.logic import send_templated_mail
@@ -23,7 +23,7 @@ class Tournament(models.Model):
         if self.stages.all().count() > 0:
             raise RuntimeError("tournament has already started")
 
-        stage = self.create_stage(
+        self.create_stage(
             stage_name="First",
             participants=self.participants.all(),
         )
@@ -74,7 +74,12 @@ class Tournament(models.Model):
         actions = []
 
         active_stage = self.get_active_stage()
+        if not active_stage:
+            return actions
+
         group = active_stage.groups.filter(participants__in=[user]).first()
+        if not group:
+            return actions
 
         query = models.Q(player1=user) | models.Q(player2=user)
         played_with = [
@@ -86,7 +91,6 @@ class Tournament(models.Model):
         for p in group.participants.all():
             if p not in played_with:
                 actions.append({"type": "to_play", "player": p})
-
 
         # set what a user needs to approve
         query = (
@@ -107,7 +111,6 @@ class Tournament(models.Model):
             actions.append({"type": "ask_approval", "player": player})
 
         return actions
-
 
     def get_active_stage(self):
         stage = self.stages.filter(
@@ -171,7 +174,7 @@ class Group(models.Model):
         return 'Group {}| {}'.format(self.name, self.stage)
 
     class Meta:
-        unique_together = [('name')]
+        unique_together = [('stage', 'name')]
 
 
 class Stage(models.Model):

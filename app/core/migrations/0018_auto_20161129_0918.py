@@ -29,8 +29,4 @@ class Migration(migrations.Migration):
             model_name='group',
             name='tournament',
         ),
-        migrations.AlterUniqueTogether(
-            name='group',
-            unique_together=set([('name',)]),
-        ),
     ]

@@ -33,8 +33,8 @@ def home(request):
         'available_tournaments': (
             Tournament.objects
             .exclude(participants=request.user)
-            .annotate(group_cnt=Count('groups'))
-            .exclude(group_cnt__gt=0)
+            .annotate(stages_cnt=Count('stages'))
+            .exclude(stages_cnt__gt=0)
             .order_by("-pk")
         )
     }
@@ -66,7 +66,7 @@ def tournament(request, tournament_id):
 @login_required(login_url='/login/')
 def join_tournament(request, tournament_id):
     t = Tournament.objects.get(id=tournament_id)
-    if t.start_at < datetime.utcnow():
+    if t.start_at < datetime.utcnow().date():
         raise ValueError("tournament has already started")
     t.participants.add(request.user)
     return tournament(request, t.pk)
