@@ -55,6 +55,7 @@ def tournament(request, tournament_id):
         stage.vgroups = vgroups
 
     ctx = {
+        'actions': t.get_user_actions(request.user),
         'approve_base_url': build_approve_base_url(request),
         'tournament': t,
         'stages': stages,

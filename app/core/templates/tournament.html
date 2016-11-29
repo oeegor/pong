@@ -4,6 +4,14 @@
 
     <h1>Tournament: {{ tournament.name }}</h1>
     {% if not tournament.stages.count %}
+      <h1>Your Actions ({{ actions | length }})</h1>
+      <ul>
+      {% for a in actions %}
+        <li>
+          {{ a.type }}: {{ a.player }}
+        </li>
+      {% endfor %}
+      </ul>
       <h1>Participants ({{ participants | length }})</h1>
       <ul>
       {% for p in tournament.participants.all %}
