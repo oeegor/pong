@@ -12,7 +12,7 @@
         </li>
       {% endfor %}
       </ul>
-      <h1>Participants ({{ participants | length }})</h1>
+      <h1>Participants ({{ tournament.participants.all | length }})</h1>
       <ul>
       {% for p in tournament.participants.all %}
         <li>

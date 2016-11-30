@@ -34,6 +34,11 @@ class TestLogic(TestCase):
         self.assertEqual(t.stages.all().count(), 3)
         self.assertEqual(last_stage.groups.all().count(), 1)
 
+        self.assertEqual(t.ended_at, None)
+        self.assertEqual(t.create_next_stage(), None)
+        t.refresh_from_db()
+        self.assertNotEqual(t.ended_at, None)
+
         with self.assertRaises(RuntimeError):
             t.create_next_stage()
 

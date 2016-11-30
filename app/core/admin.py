@@ -1,13 +1,9 @@
 # coding: utf-8
 
-import math
-import random
-
 from django.contrib import admin
 from django.db import transaction
 
 from .models import Group, Quote, Stage, Tournament, SetResult
-from utils import split_players_to_groups
 
 
 @transaction.atomic
@@ -18,15 +14,15 @@ create_next_stage.short_description = "Create the next stage"
 
 
 @transaction.atomic
-def create_first_stage(modeladmin, request, queryset):
+def start_tournament(modeladmin, request, queryset):
     for tournament in queryset:
         tournament.start()
-create_first_stage.short_description = "Create the first stage"
+start_tournament.short_description = "Start selected tournaments"
 
 
 class TournamentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'start_at')
-    actions = [create_first_stage, create_next_stage]
+    actions = [start_tournament, create_next_stage]
 
 
 class StageAdmin(admin.ModelAdmin):

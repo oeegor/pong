@@ -1,9 +1,10 @@
 # coding: utf-8
 
-from datetime import datetime, timedelta
+from datetime import timedelta
+from logging import getLogger
 import random
 
-from dj_templated_mail.logic import send_templated_mail
+from dj_templated_mail.logic import send_templated_mail, NoTemplateError
 from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models, transaction
@@ -13,11 +14,15 @@ from core.vmodels import Table
 from utils import split_players_to_groups
 
 
+logger = getLogger("core.models")
+
+
 class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    created_at = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length=256)
     start_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
 
     def start(self):
         if self.stages.all().count() > 0:
@@ -27,19 +32,23 @@ class Tournament(models.Model):
             stage_name="First",
             participants=self.participants.all(),
         )
-        self.send_tournament_started_email()
 
     def end(self):
+        self.ended_at = timezone.now()
+        self.save(update_fields=['ended_at'])
         self.send_tournament_ended_email()
 
     def create_next_stage(self):
-        stage = self.stages.filter(next_stage__isnull=True).first()
+        stage = self.stages.filter(ended_at__isnull=True).first()
         if not stage:
             raise RuntimeError("cannot find stage to start from")
 
         groups = list(stage.groups.all())
         if len(groups) == 1:
-            raise RuntimeError("cannot create next stage for stage with one group")
+            stage.ended_at = timezone.now()
+            stage.save(update_fields=["ended_at"])
+            self.end()
+            return
 
         players = []
         for group in groups:
@@ -54,12 +63,13 @@ class Tournament(models.Model):
             participants=players,
         )
         stage.next_stage = next_stage
-        stage.save(update_fields=["next_stage"])
+        stage.ended_at = timezone.now()
+        stage.save(update_fields=["next_stage", "ended_at"])
         return next_stage
 
     def create_stage(self, stage_name, participants):
         stage = Stage.objects.create(
-            deadline=datetime.utcnow() + timedelta(days=14),
+            deadline=timezone.now() + timedelta(days=14),
             name=stage_name,
             tournament=self,
         )
@@ -68,6 +78,7 @@ class Tournament(models.Model):
             stage.participants.add(p)
 
         stage.create_groups()
+        stage.send_stage_created_email()
         return stage
 
     def get_user_actions(self, user):
@@ -119,28 +130,21 @@ class Tournament(models.Model):
         ).first()
         return stage
 
-    def send_tournament_started_email(self):
-        stage = self.get_active_stage()
-        for group in stage.groups.all().prefetch_related('participants'):
-            mails = [p.email for p in group.participants.all()]
-            send_templated_mail(
-                template_name='tournament_has_started',
-                context={'group': {'name': group.name, 'table': group.get_table()}},
-                recipients=mails,
-                sender='donotreply-pongota@ostrovok.ru',
-            )
-
     def send_tournament_ended_email(self):
         stage = self.get_active_stage()
         group = stage.groups.all().prefetch_related('participants').first()
 
         mails = [p.email for p in self.participants.all()]
-        send_templated_mail(
-            template_name='tournament_has_ended',
-            context={'group': {'name': group.name, 'table': group.get_table()}},
-            recipients=mails,
-            sender='donotreply-pongota@ostrovok.ru',
-        )
+        template_name = 'tournament_has_ended'
+        try:
+            send_templated_mail(
+                template_name=template_name,
+                context={'group': {'name': group.name, 'table': group.get_table()}},
+                recipients=mails,
+                sender='donotreply-pongota@ostrovok.ru',
+            )
+        except NoTemplateError:
+            logger.error("no template for {}".format(template_name), exc_info=True)
 
     def __str__(self):
         return 'Tournament {}| {}'.format(self.pk, self.name)
@@ -150,7 +154,7 @@ class Group(models.Model):
     name = models.CharField(max_length=256)
     participants = models.ManyToManyField('account.User')
     stage = models.ForeignKey("Stage", related_name="groups")
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def get_table(self, user_id=None):
         participants = self.participants.all().order_by('email')
@@ -181,7 +185,8 @@ class Stage(models.Model):
 
     name = models.CharField(max_length=256)
     tournament = models.ForeignKey('Tournament', related_name='stages')
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    created_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True)
     deadline = models.DateTimeField()
     next_stage = models.OneToOneField("self", null=True, blank=True)
     participants = models.ManyToManyField("account.User", blank=True)
@@ -202,6 +207,20 @@ class Stage(models.Model):
                 name=chr(97 + idx).upper(),
             )
             dj_group.participants.add(*group)
+
+    def send_stage_created_email(self):
+        for group in self.groups.all().prefetch_related('participants'):
+            mails = [p.email for p in group.participants.all()]
+            template_name = 'stage_has_been_created'
+            try:
+                send_templated_mail(
+                    template_name=template_name,
+                    context={'group': {'name': group.name, 'table': group.get_table()}},
+                    recipients=mails,
+                    sender='donotreply-pongota@ostrovok.ru',
+                )
+            except NoTemplateError:
+                logger.error("no template for {}".format(template_name), exc_info=True)
 
     @property
     def is_closed(self):
@@ -231,7 +250,7 @@ class SetResult(models.Model):
     player1_approved = models.BooleanField(default=False)
     player2_approved = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    created_at = models.DateTimeField(default=timezone.now)
 
     @property
     def is_approved(self):
@@ -272,18 +291,22 @@ class SetResult(models.Model):
     def send_group_notification(self, approve_base_url):
         mails = [p.email for p in self.group.participants.all()]
         group = self.group
-        send_templated_mail(
-            template_name='new_result_added',
-            context={
-                'player1_name': self.player1.short_email,
-                'player2_name': self.player2.short_email,
-                'score': self.get_score(is_player1=True).score,
-                'group': {'name': group.name, 'table': group.get_table()},
-                'approve_base_url': approve_base_url,
-            },
-            recipients=mails,
-            sender='donotreply-pongota@ostrovok.ru',
-        )
+        template_name = 'new_result_added'
+        try:
+            send_templated_mail(
+                template_name=template_name,
+                context={
+                    'player1_name': self.player1.short_email,
+                    'player2_name': self.player2.short_email,
+                    'score': self.get_score(is_player1=True).score,
+                    'group': {'name': group.name, 'table': group.get_table()},
+                    'approve_base_url': approve_base_url,
+                },
+                recipients=mails,
+                sender='donotreply-pongota@ostrovok.ru',
+            )
+        except NoTemplateError:
+            logger.error("no template for {}".format(template_name), exc_info=True)
 
     def send_approve_notification(self, sender_id):
         opponent = self.player1
@@ -291,17 +314,21 @@ class SetResult(models.Model):
             opponent = self.player2
 
         mails = [opponent.email]
-        send_templated_mail(
-            template_name='need_result_approve',
-            context={
-                'player1_name': self.player1.short_email,
-                'player2_name': self.player2.short_email,
-                'score': self.get_score(is_player1=True).score,
-                'match_id': self.pk,
-            },
-            recipients=mails,
-            sender=settings.EMAIL_HOST_USER,
-        )
+        template_name = 'need_result_approve'
+        try:
+            send_templated_mail(
+                template_name='need_result_approve',
+                context={
+                    'player1_name': self.player1.short_email,
+                    'player2_name': self.player2.short_email,
+                    'score': self.get_score(is_player1=True).score,
+                    'match_id': self.pk,
+                },
+                recipients=mails,
+                sender=settings.EMAIL_HOST_USER,
+            )
+        except NoTemplateError:
+            logger.error("no template for {}".format(template_name), exc_info=True)
 
     def __str__(self):
         return 'SetResult {}| {}'.format(self.player1, self.player2)
