@@ -19,12 +19,14 @@ logger = getLogger("core.models")
 
 class Tournament(models.Model):
     participants = models.ManyToManyField('account.User', blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length=256)
     start_at = models.DateField(null=True, blank=True)
+    started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
 
     def start(self):
+        if self.started_at is not None:
+            raise RuntimeError("tournament has already started")
         if self.stages.all().count() > 0:
             raise RuntimeError("tournament has already started")
 
@@ -125,13 +127,13 @@ class Tournament(models.Model):
 
     def get_active_stage(self):
         stage = self.stages.filter(
-            deadline__gt=timezone.now(),
+            ended_at__isnull=True,
             next_stage__isnull=True,
         ).first()
         return stage
 
     def send_tournament_ended_email(self):
-        stage = self.get_active_stage()
+        stage = self.stages.all().order_by("-pk").first()
         group = stage.groups.all().prefetch_related('participants').first()
 
         mails = [p.email for p in self.participants.all()]

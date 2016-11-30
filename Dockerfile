@@ -42,6 +42,7 @@ RUN set -ex \
     && chmod 644 /etc/logrotate.d/* \
     && find -name '*.pyc' -delete \
     && mkdir -p /var/log/app /var/log/nginx \
+    && chmod 644 /etc/cron.d/app \
     && chown -R www-data. /opt/app/ /var/log/app /var/log/nginx \
     && nginx -t \
     && find static -type f -print | sort | xargs cat | md5sum | awk '{ print $1 }' > .media-hash \
