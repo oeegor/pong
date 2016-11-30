@@ -12,10 +12,6 @@ rm-pyc:
 setup: env/bin/activate requirements.txt
 	. env/bin/activate; pip install -Ur requirements.txt
 
-# target: pip - install python requirements
-pip:
-	pip install -r requirements.txt
-
 # target: run — run project
 run: env/bin/activate requirements.txt
 	. env/bin/activate; gunicorn --reload --config etc/gunicorn/chrn.py chrn.wsgi
@@ -40,6 +36,11 @@ buildup: stop build up
 makemessages:
 	./app/manage.py makemessages --locale ru --locale en --ignore env
 
+# target: pip
+pip:
+	pip install pip-tools
+	pip-compile requirements.in -o requirements.txt
+	pip-sync
 
 # target: tx - set translations
 tx:
