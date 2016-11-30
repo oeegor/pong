@@ -11,7 +11,7 @@
     margin: 0;
 }
 </style>
-<h2>{{ g.name }}</h2>
+<h2>Group {{ g.name }}</h2>
 <table rules="all" cellpadding="7">
 {% with g.table as table %}
   <thead>
@@ -39,15 +39,15 @@
             <p class="balls">
             {{ cell.score.balls }}
             </p>
-            {% if not cell.is_approved %}
+            {% if not cell.is_approved and cell.can_add_approve %}
             <a href="{{ approve_base_url }}/{% url 'app-approve-set-result' cell.set_result.pk %}">APPROVE</a>
             {% endif %}
           </td>
         {% elif cell.is_filler %}
           <td>x</td>
-        {% elif cell.is_current_user %}
+        {% elif cell.can_add_approve %}
           <td>
-            <a href="{% url 'app-add-set-result' tournament.pk g.pk cell.player1.pk cell.player2.pk %}">ADD</a>
+            <a href="{% url 'app-add-set-result' g.pk cell.player1.pk cell.player2.pk %}">ADD</a>
           </td>
         {% else %}
           <td></td>

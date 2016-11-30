@@ -1,55 +1,40 @@
 # coding: utf-8
 
-import math
-import random
-
 from django.contrib import admin
 from django.db import transaction
 
-from .models import Group, Quote, Tournament, SetResult
-from utils import split_players_to_groups
+from .models import Group, Quote, Stage, Tournament, SetResult
 
 
 @transaction.atomic
-def cherrypick_from_groups(modeladmin, request, queryset):
-    players = []
-
-    for group in queryset:
-        table = group.get_table()
-        limit = int(len(table) / 2)
-        for row in table[:limit]:
-            players.append(row.player1)
-    else:
-        tournament = group.tournament
-
-    random.shuffle(players)
-    groups = split_players_to_groups(players)
-    for idx, group in enumerate(groups):
-        dj_group = Group.objects.create(
-            tournament=tournament,
-            name=chr(97 + idx).upper()*2,
-        )
-        dj_group.participants.add(*group)
-cherrypick_from_groups.short_description = "Cherrypick from groups"
-
-
-def create_groups(modeladmin, request, queryset):
+def create_next_stage(modeladmin, request, queryset):
     for tournament in queryset:
-        tournament.create_groups()
-        tournament.send_tournament_started_email()
-create_groups.short_description = "Generate groups"
+        tournament.create_next_stage()
+create_next_stage.short_description = "Create the next stage"
+
+
+@transaction.atomic
+def start_tournament(modeladmin, request, queryset):
+    for tournament in queryset:
+        tournament.start()
+start_tournament.short_description = "Start selected tournaments"
 
 
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'started_at', 'end_at')
-    actions = [create_groups]
+    list_display = ('pk', 'name', 'start_at')
+    actions = [start_tournament, create_next_stage]
 
 
-class GroupAdmin(admin.ModelAdmin):
+class StageAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'tournament')
     list_filter = ["tournament"]
     list_display_links = ('pk', 'tournament',)
-    actions = [cherrypick_from_groups]
+
+
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'stage')
+    list_filter = ["stage", "stage__tournament"]
+    list_display_links = ('pk', 'stage',)
 
 
 class QuoteAdmin(admin.ModelAdmin):
@@ -62,6 +47,7 @@ class SetResultAdmin(admin.ModelAdmin):
     list_display_links = ('group', 'player1', 'player2')
 
 
+admin.site.register(Stage, StageAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Tournament, TournamentAdmin)
