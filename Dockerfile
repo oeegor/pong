@@ -1,5 +1,4 @@
-# base image
-FROM oeegor/baseimage:0.1
+FROM phusion/baseimage:0.9.19
 ENV HOME=/root
 CMD ["/sbin/my_init"]
 
