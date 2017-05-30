@@ -4,13 +4,13 @@ from datetime import timedelta
 from logging import getLogger
 import random
 
-from dj_templated_mail.logic import send_templated_mail, NoTemplateError
 from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models, transaction
 from django.utils import timezone
 
-from core.vmodels import Table
+from core.vmodels import Score, Table
+from helpers.mail import send_templated_mail
 from utils import split_players_to_groups
 
 
@@ -145,7 +145,7 @@ class Tournament(models.Model):
                 recipients=mails,
                 sender='donotreply-pongota@ostrovok.ru',
             )
-        except NoTemplateError:
+        except TemplateDoesNotExist:
             logger.error("no template for {}".format(template_name), exc_info=True)
 
     def __str__(self):
@@ -213,16 +213,15 @@ class Stage(models.Model):
     def send_stage_created_email(self):
         for group in self.groups.all().prefetch_related('participants'):
             mails = [p.email for p in group.participants.all()]
-            template_name = 'stage_has_been_created'
-            try:
-                send_templated_mail(
-                    template_name=template_name,
-                    context={'group': {'name': group.name, 'table': group.get_table()}},
-                    recipients=mails,
-                    sender='donotreply-pongota@ostrovok.ru',
-                )
-            except NoTemplateError:
-                logger.error("no template for {}".format(template_name), exc_info=True)
+
+            subject = u'[pong] New Stage: {name}'.format(name=self.name)
+            send_templated_mail(
+                subject=subject,
+                template_name='stage_has_been_created.html',
+                context={'group': {'name': group.name, 'table': group.get_table()}},
+                recipients=mails,
+                sender='donotreply-pongota@ostrovok.ru',
+            )
 
     @property
     def is_closed(self):
@@ -272,16 +271,10 @@ class SetResult(models.Model):
         else:
             return self.player2
 
-    def get_score(self, is_player1):
-
-        if is_player1:
-            p1_wins = self.player1_wins
-            p1_points = self.player1_points
-            p2_points = self.player2_points
-        else:
-            p1_wins = 3 - self.player1_wins
-            p1_points = self.player2_points
-            p2_points = self.player1_points
+    def get_score(self):
+        p1_wins = self.player1_wins
+        p1_points = self.player1_points
+        p2_points = self.player2_points
 
         return Score(
             wins=p1_wins,
@@ -290,25 +283,25 @@ class SetResult(models.Model):
             is_approved=self.is_approved,
         )
 
-    def send_group_notification(self, approve_base_url):
+    def send_new_score_notification(self, approve_base_url):
         mails = [p.email for p in self.group.participants.all()]
         group = self.group
-        template_name = 'new_result_added'
-        try:
-            send_templated_mail(
-                template_name=template_name,
-                context={
-                    'player1_name': self.player1.short_email,
-                    'player2_name': self.player2.short_email,
-                    'score': self.get_score(is_player1=True).score,
-                    'group': {'name': group.name, 'table': group.get_table()},
-                    'approve_base_url': approve_base_url,
-                },
-                recipients=mails,
-                sender='donotreply-pongota@ostrovok.ru',
-            )
-        except NoTemplateError:
-            logger.error("no template for {}".format(template_name), exc_info=True)
+
+        subject = u'New result ({score} {player1_name}:{player2_name}) added!'.format(
+            score=self.get_score(is_player1=True).score,
+            player1_name=self.player1.short_email,
+            player2_name=self.player2.short_email,
+        )
+        send_templated_mail(
+            subject=subject,
+            template_name='new_result_added.html',
+            context={
+                'group': {'name': group.name, 'table': group.get_table()},
+                'approve_base_url': approve_base_url,
+            },
+            recipients=mails,
+            sender='donotreply-pongota@ostrovok.ru',
+        )
 
     def send_approve_notification(self, sender_id):
         opponent = self.player1
@@ -316,21 +309,21 @@ class SetResult(models.Model):
             opponent = self.player2
 
         mails = [opponent.email]
-        template_name = 'need_result_approve'
-        try:
-            send_templated_mail(
-                template_name='need_result_approve',
-                context={
-                    'player1_name': self.player1.short_email,
-                    'player2_name': self.player2.short_email,
-                    'score': self.get_score(is_player1=True).score,
-                    'match_id': self.pk,
-                },
-                recipients=mails,
-                sender=settings.EMAIL_HOST_USER,
-            )
-        except NoTemplateError:
-            logger.error("no template for {}".format(template_name), exc_info=True)
+
+        subject = u'Approve needed: ({score}  {player1_name}:{player2_name})'.format(
+            score=self.get_score(is_player1=True).score,
+            player1_name=self.player1.short_email,
+            player2_name=self.player2.short_email,
+        )
+        send_templated_mail(
+            subject=subject,
+            template_name='need_result_approve.html',
+            context={
+                'match_id': self.pk,
+            },
+            recipients=mails,
+            sender=settings.EMAIL_HOST_USER,
+        )
 
     def __str__(self):
         return 'SetResult {}| {}'.format(self.player1, self.player2)

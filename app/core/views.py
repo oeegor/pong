@@ -76,7 +76,7 @@ def join_tournament(request, tournament_id):
 @render_to('add_set_result.html')
 def add_set_result(request, group_id, player1_id, player2_id):
 
-    group = Group.objects.filter(pk=group_id)
+    group = Group.objects.get(pk=group_id)
     if group.stage.is_closed:
         return HttpResponseBadRequest("Unable to add result, stage is over")
 
@@ -101,27 +101,23 @@ def add_set_result(request, group_id, player1_id, player2_id):
         return ctx
 
     elif request.method == 'POST':
-        post_data = deepcopy(request.POST)
-        if post_data['group'] == '0':
-            del post_data['group']
-        form = SetResultForm(post_data)
+        form = SetResultForm(request.POST)
         if str(request.user.pk) not in [player1_id, player2_id]:
             form.add_error(None, 'cannot set scores for not your games')
         if not form.is_valid():
+            print("not valid form", form.errors)
             form.set_inputs(player1=player1, player2=player2)
             return {
                 'form': form
             }
-        new_result = form.save()
-        if 'group' in post_data:
-            new_result.send_group_notification(approve_base_url=build_approve_base_url(request))
-        else:
-            new_result.send_approve_notification(request.user.pk)
 
-        if int(tournament_id):
-            return HttpResponseRedirect(reverse('app-tournament', args=[tournament_id]))
-        else:
-            return HttpResponseRedirect(reverse('rating-list'))
+    with transaction.atomic():
+        new_result = form.save()
+
+        new_result.send_new_score_notification(approve_base_url=build_approve_base_url(request))
+        new_result.send_approve_notification(request.user.pk)
+
+    return HttpResponseRedirect(reverse('app-tournament', args=[group.tournament.pk]))
 
 
 @login_required(login_url='/login/')

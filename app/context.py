@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
 
 
 def build_context(request):

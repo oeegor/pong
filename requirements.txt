@@ -4,25 +4,30 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-click==6.6                # via pip-tools
-contextlib2==0.5.4        # via raven
-defusedxml==0.4.1         # via python3-openid
-dj-database-url==0.4.1
+certifi==2017.4.17        # via requests
+chardet==3.0.3            # via requests
+click==6.7                # via pip-tools
+contextlib2==0.5.5        # via raven
+defusedxml==0.5.0         # via python3-openid, social-auth-core
+dj-database-url==0.4.2
 dj-templated-mail==0.1.6
-django-extensions==1.7.5
-Django==1.9.7
+django-extensions==1.7.9
+django==1.9.7
 first==2.0.1              # via pip-tools
-gunicorn==19.6.0
-oauthlib==2.0.1           # via python-social-auth, requests-oauthlib
-pip-tools==1.8.0
-psycopg2==2.6.2
-py==1.4.31                # via pytest
-pyjwt==1.4.2              # via python-social-auth
+gunicorn==19.7.1
+idna==2.5                 # via requests
+oauthlib==2.0.2           # via requests-oauthlib, social-auth-core
+pip-tools==1.9.0
+psycopg2==2.7.1
+py==1.4.33                # via pytest
+pyjwt==1.5.0              # via social-auth-core
 pytest-django==3.1.2
-pytest==3.0.4
-python-social-auth==0.2.21
-python3-openid==3.0.10    # via python-social-auth
-raven==5.32.0
-requests-oauthlib==0.7.0  # via python-social-auth
-requests==2.12.1
-six==1.10.0               # via django-extensions, pip-tools, python-social-auth
+pytest==3.1.0
+python3-openid==3.1.0     # via social-auth-core
+raven==6.1.0
+requests-oauthlib==0.8.0  # via social-auth-core
+requests==2.16.5
+six==1.10.0               # via django-extensions, pip-tools, social-auth-app-django, social-auth-core
+social-auth-app-django==1.2.0
+social-auth-core==1.3.0
+urllib3==1.21.1           # via requests

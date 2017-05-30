@@ -29,7 +29,7 @@ urlpatterns += [
 
     url(r'^group/([0-9]+)/([0-9]+)/([0-9]+)/add-result/?$', core.views.add_set_result, name='app-add-set-result'),
     url(r'^set-result/([0-9]+)/approve/?$', core.views.approve_set_result, name='app-approve-set-result'),
-    url(r'', include('social.apps.django_app.urls', namespace='social')),
+    url(r'', include('social_django.urls', namespace='social')),
 
     url(r'^login/?$', account.views.login, name='login'),
     url(r'^logout/?$', account.views.logout, name='logout'),
