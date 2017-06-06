@@ -3,7 +3,7 @@
 from collections import defaultdict, OrderedDict
 
 
-class Table(object):
+class GroupStats(object):
     def __init__(self, group, user_id):
         super().__init__()
         self.players = list(group.participants.all().order_by('email'))
@@ -66,50 +66,6 @@ def score_sort_key(player, scores):
         return (0, 0, 0)
 
     return (int(scores.points), int(scores.sets.split(":")[0]), int(scores.balls.split(":")[0]))
-
-
-class TableRow(list):
-    def __init__(self, players, player1, user_id, approve_allowed):
-        super().__init__()
-        self.player1 = player1
-        self.place = None
-        for player2 in players:
-            is_current_user = user_id in [player1.pk, player2.pk]
-            approve_allowed = is_current_user and approve_allowed
-            self.append(TableCell(None, player1, player2, approve_allowed))
-
-    @property
-    def balls(self):
-        win = sum([s.score.balls_win for s in self if s.score])
-        lose = sum([s.score.balls_lose for s in self if s.score])
-        return '{}:{}'.format(win, lose)
-
-    @property
-    def sets(self):
-        win = sum([s.score.wins for s in self if s.score])
-        lose = sum([s.score.loses for s in self if s.score])
-        return '{}:{}'.format(win, lose)
-
-    @property
-    def points(self):
-        points = sum([s.score.points for s in self if s.score])
-        return '{}'.format(points)
-
-
-class TableCell(object):
-    def __init__(self, score, player1, player2, approve_allowed):
-        self.score = score
-        self.player1 = player1
-        self.player2 = player2
-        self.is_approved = None
-        self.can_add_approve = approve_allowed
-        self.is_filler = player1.pk == player2.pk
-
-    def __str__(self):
-        return '<Cell {}>'.format(self.score)
-
-    def __repr__(self):
-        return str(self)
 
 
 class PlayerScore(list):

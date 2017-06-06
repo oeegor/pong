@@ -209,6 +209,14 @@ class Stage(models.Model):
                 name=chr(97 + idx).upper(),
             )
             dj_group.participants.add(*group)
+            for idx, playerA in enumerate(group):
+                for jdx, playerB in enumerate(group):
+                    if jdx > idx:
+                        SetResult.objects.create(
+                            group=dj_group,
+                            player1=playerA,
+                            player2=playerB,
+                        )
 
     def send_stage_created_email(self):
         for group in self.groups.all().prefetch_related('participants'):
@@ -237,7 +245,6 @@ class Stage(models.Model):
 class SetResult(models.Model):
     group = models.ForeignKey(
         'Group',
-        null=True, blank=True,
         related_name='results'
     )
 
@@ -271,7 +278,7 @@ class SetResult(models.Model):
         else:
             return self.player2
 
-    def get_score(self):
+    def get_score(self, user_id):
         p1_wins = self.player1_wins
         p1_points = self.player1_points
         p2_points = self.player2_points
